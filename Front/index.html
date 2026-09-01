@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liga Biwenger 2026-27</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- INICIO Login Jugador -->
+    <section id="login_jugador">
+
+        <h2>¿Quién eres?</h2>
+
+        <div id="cuadricula-jugadores">
+            <button class="btn-jugador">Alejo</button>
+            <button class="btn-jugador">Victor Hugo</button>
+            <button class="btn-jugador">Lavado</button>
+            <button class="btn-jugador">Jaume</button>
+            <button class="btn-jugador">Dani Haro</button>
+            <button class="btn-jugador">Beltran</button>
+            <button class="btn-jugador">Ivan</button>
+            <button class="btn-jugador">Herrero</button>
+            <button class="btn-jugador">Bujardon</button>
+            <button class="btn-jugador">Victor Ruiz</button>
+            <button class="btn-jugador">Padilla</button>
+            <button class="btn-jugador">Dani Rodriguez</button>
+            <button class="btn-jugador">Gabri</button>
+            <button class="btn-jugador">Xavi</button>
+        </div>
+
+        <div class="enlace-admin">
+            <a href="tesorero.html">🔑 Área del Tesorero</a>
+        </div>
+    </section>
+
+    <!-- FIN Login Jugador -->
+
+
+    <!-- INICIO Pop up Bienvenida -->
+    <section id="popup_bienvenida">
+
+        <div class="caja-popup">
+            <p id="texto-mensaje-bienvenida">Mesaje de bienvenida</p>
+            <button id="btn-continuar">OK</button>
+        </div>
+
+    </section>
+    <!-- FIN Pop up Bienvenida -->
+
+    <!-- INICIO Pagina principal -->
+    <section id="pagina_principal">
+
+        <header class="cabecera-app">
+            <h1>Biwenger 2026-27</h1>
+            <button id="btn-cambiar-jugador">Cambiar de jugador</button>
+        </header>
+
+        <!-- BLOQUE DEUDAS -->
+        <div class="tarjeta-deuda">
+            <h3>Tus Deudas</h3>
+            <p id="texto-tus-deudas">¡Estás al día! No debes nada.</p>
+        </div>
+
+        <!-- BLOQUE FAROLILLO -->
+        <div class="tarjeta-farolillo">
+            <h3>El Farolillo Rojo</h3>
+            <p id="texto-el-ultimo">No os olvidéis de reiros del pedazo de farolo *Nombre*</p>
+            <button id="btn-generar-ultimo">Generar mensaje humillante</button>
+        </div>
+
+        <!-- POPUP: Mensaje del Farolillo Rojo -->
+        <section id="popup-ultimo" class="popup-oculto">
+            <div class="caja-popup">
+                <p id="texto-popup-ultimo">Mensaje humillante</p>
+                <button id="btn-copiar">Copiar mensaje</button>
+                <button id="btn-cerrar-popup-ultimo">Cerrar</button>
+            </div>
+        </section>
+
+        <!-- BLOQUE CLASIFICACION -->
+        <div class="tarjeta-clasificacion">
+            <h3>Clasificación General</h3>
+
+            <div class="resumen-global">
+                <div class="metrica">
+                    <span class="etiqueta">Total Pagado</span>
+                    <span class="valor" id="total-pagado-global">9.00 €</span>
+                </div>
+                <div class="metrica">
+                    <span class="etiqueta">Proyección Total</span>
+                    <span class="valor" id="proyeccion-global">53.00 €</span>
+                </div>
+                <div class="metrica">
+                    <span class="etiqueta">Comida / Persona</span>
+                    <span class="valor" id="comida-persona">45 €</span>
+                </div>
+            </div>
+
+            <div class="tabla-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Pos</th>
+                            <th>Jugador</th>
+                            <th>€ x Posición</th>
+                            <th>€ x Rojas</th>
+                            <th>Total Pagado</th>
+                            <th>Proyección</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpo-tabla-clasificacion">
+                        <!-- Fila de prueba completa -->
+                        <tr>
+                            <td>1</td>
+                            <td>Beltran</td>
+                            <td>5.00 €</td>
+                            <td>0.00 €</td>
+                            <td>5.00 €</td>
+                            <td>38.00 €</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>Jaume</td>
+                            <td>2.00 €</td>
+                            <td>2.00 €</td>
+                            <td>4.00 €</td>
+                            <td>15.00 €</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+    </section>
+    <!-- FIN Pagina principal -->
+
+</body>
+
+<footer class="pie-pagina">
+    <p>Biwenger League 2026-27</p>
+</footer>

@@ -1,0 +1,521 @@
+/* Estilos generales para simular pantalla de móvil */
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background-color: #f4f6f8;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Las secciones actúan como pantallas completas */
+section {
+    width: 100%;
+    max-width: 480px;
+    /* Ancho máximo estilo móvil */
+    background: #ffffff;
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+}
+
+/* Ocultar pantallas inactivas */
+.oculto {
+    display: none !important;
+}
+
+
+/* INICIO Selección Jugadores */
+#login_jugador {
+    padding: 20px;
+    background-color: #f8f9fa;
+    /* Un gris levísimo para que no sea blanco nuclear */
+}
+
+#login_jugador h2 {
+    text-align: center;
+    font-size: 26px;
+    margin-bottom: 28px;
+    color: #db2028;
+    /* Rojo Biwenger para el título */
+    text-transform: ;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+#cuadricula-jugadores {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+/* Botones oscuros por defecto */
+.btn-jugador {
+    background-color: #1a1a1a;
+    /* Fondo negro */
+    border: 2px solid #1a1a1a;
+    border-radius: 12px;
+    padding: 16px 10px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #ffffff;
+    /* Letra blanca */
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* El botón se tiñe de rojo al tocarlo */
+.btn-jugador:hover,
+.btn-jugador:active {
+    background-color: #db2028;
+    /* Rojo Biwenger */
+    border-color: #db2028;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(219, 32, 40, 0.3);
+    /* Sombra rojiza */
+}
+
+.enlace-admin {
+    text-align: center;
+    margin-top: 25px;
+}
+
+.enlace-admin a {
+    color: #666666;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.enlace-admin a:hover {
+    color: #db2028;
+}
+
+/* FIN Selección Jugadores */
+
+
+/* INICIO Pop up bienvenida */
+#popup_bienvenida {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    /* Fondo negro casi opaco */
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+.caja-popup {
+    background: #ffffff;
+    padding: 24px;
+    border-radius: 18px;
+    max-width: 360px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 25px rgba(0, 0, 0, 0.5);
+    border: 2px solid #1a1a1a;
+    /* Toque oscuro en el borde */
+}
+
+.caja-popup p {
+    font-size: 16px;
+    font-weight: 500;
+    color: #1a1a1a;
+    /* Texto principal oscuro */
+    margin-bottom: 20px;
+    line-height: 1.4;
+}
+
+#btn-continuar {
+    background: #db2028;
+    /* Rojo Biwenger */
+    color: #ffffff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    width: 100%;
+}
+
+#btn-continuar:hover,
+#btn-continuar:active {
+    background: #b81920;
+    /* Un rojo un poco más oscuro al pulsar */
+}
+
+/* FIN Pop up bienvenida */
+
+
+/* INICIO Página principal */
+#pagina_principal {
+    background-color: #f0f2f5;
+}
+
+/* --- Cabecera --- */
+.cabecera-app {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.cabecera-app h1 {
+    font-size: 20px;
+    font-weight: 800;
+    color: #db2028;
+    /* Rojo Biwenger para el título */
+}
+
+#btn-cambiar-jugador {
+    background: #ffffff;
+    color: #1a1a1a;
+    border: 2px solid #1a1a1a;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#btn-cambiar-jugador:hover,
+#btn-cambiar-jugador:active {
+    background: #db2028;
+    color: #ffffff;
+    border-color: #db2028;
+}
+
+/* --- Tarjeta: Deudas --- */
+.tarjeta-deuda {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border-left: 5px solid #db2028;
+    /* Borde rojo estático para darle vida */
+}
+
+.tarjeta-deuda h3 {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    color: #1a1a1a;
+    text-transform: uppercase;
+}
+
+.tarjeta-deuda p {
+    font-size: 15px;
+    color: #4b5563;
+    font-weight: 500;
+}
+
+
+/* --- Tarjeta: Farolillo Rojo --- */
+.tarjeta-farolillo {
+    background: #1a1a1a;
+    /* Fondo negro para que destaque como tarjeta especial */
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    border-left: 5px solid #db2028;
+    /* Borde rojo Biwenger */
+}
+
+.tarjeta-farolillo h3 {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    color: #ffffff;
+    /* Título en blanco puro */
+    text-transform: uppercase;
+}
+
+.tarjeta-farolillo p {
+    font-size: 15px;
+    color: #e2e8f0;
+    margin-bottom: 16px;
+    line-height: 1.4;
+}
+
+#btn-generar-ultimo {
+    width: 100%;
+    background: #db2028;
+    color: #ffffff;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+}
+
+#btn-generar-ultimo:hover,
+#btn-generar-ultimo:active {
+    background: #ffffff;
+    color: #db2028;
+}
+
+
+/* --- Pop up: Farolillo Rojo --- */
+#popup-ultimo {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+/* El texto de la broma */
+#texto-popup-ultimo {
+    font-size: 16px;
+    font-weight: 500;
+    color: #1a1a1a;
+    margin-bottom: 24px;
+    font-style: italic;
+    line-height: 1.5;
+}
+
+/* --- Botones del popup --- */
+#btn-copiar {
+    background: #db2028;
+    /* Rojo Biwenger */
+    color: #ffffff;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+#btn-copiar:hover,
+#btn-copiar:active {
+    background: #b81920;
+}
+
+/* Botón secundario: Cerrar */
+#btn-cerrar-popup-ultimo {
+    background: #ffffff;
+    color: #1a1a1a;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: 2px solid #1a1a1a;
+    /* Borde negro fuerte */
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+#btn-cerrar-popup-ultimo:hover,
+#btn-cerrar-popup-ultimo:active {
+    background: #1a1a1a;
+    color: #ffffff;
+}
+
+
+
+/* --- Tarjeta: Clasificación --- */
+/* --- Tarjeta Principal de Clasificación --- */
+.tarjeta-clasificacion {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border-left: 5px solid #1a1a1a;
+    /* Borde negro para darle consistencia */
+}
+
+.tarjeta-clasificacion h3 {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 16px;
+    color: #1a1a1a;
+    text-transform: uppercase;
+}
+
+/* --- Resumen Global  --- */
+.resumen-global {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.metrica {
+    background: #f8f9fa;
+    /* Gris muy sutil */
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px 4px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.metrica .etiqueta {
+    font-size: 9px;
+    color: #666666;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.metrica .valor {
+    font-size: 14px;
+    font-weight: 800;
+    color: #db2028;
+}
+
+/* --- Resumen Global (3 bloques superiores) --- */
+.resumen-global {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.metrica {
+    background: #f8f9fa;
+    /* Gris muy sutil */
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px 4px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.metrica .etiqueta {
+    font-size: 9px;
+    color: #666666;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.metrica .valor {
+    font-size: 14px;
+    font-weight: 800;
+    color: #db2028;
+    /* Rojo Biwenger para el dinero */
+}
+
+/* --- Tabla de Clasificación --- */
+.tabla-responsive {
+    overflow-x: auto;
+    /* Permite deslizar la tabla en móviles pequeños */
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    text-align: center;
+    /* Centramos datos por defecto */
+    background: #ffffff;
+    white-space: nowrap;
+    /* Evita que los textos salten a la línea de abajo y deformen la tabla */
+}
+
+th,
+td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+/* Cabecera oscura, estilo muy deportivo */
+th {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    font-weight: 700;
+    text-transform: ;
+    font-size: 11px;
+}
+
+th:nth-child(2),
+td:nth-child(2) {
+    text-align: left;
+}
+
+td:nth-child(2) {
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+/* Efecto cebra para las demás filas (ayuda a leer las líneas largas) */
+tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+/* Los 3 primeros (Los que menos pagan): Verde éxito */
+tbody tr:nth-child(1) td,
+tbody tr:nth-child(2) td,
+tbody tr:nth-child(3) td {
+    background-color: #f0fdf4;
+    /* Fondo verde muy suave */
+    color: #166534;
+    /* Texto verde oscuro */
+    font-weight: 700;
+}
+
+/* Los 3 últimos (El pozo, los que más pagan): Rojo Biwenger */
+/* Usamos nth-last-child para contar desde abajo hacia arriba */
+tbody tr:nth-last-child(1) td,
+tbody tr:nth-last-child(2) td,
+tbody tr:nth-last-child(3) td {
+    background-color: #fff5f5;
+    /* Fondo rojo muy suave */
+    color: #db2028;
+    /* Texto rojo Biwenger */
+    font-weight: 700;
+}
+
+/* El Farolillo Rojo absoluto (El último de todos): Más intenso */
+tbody tr:nth-last-child(1) td {
+    background-color: #fee2e2;
+    /* Fondo rojo un poco más fuerte */
+}
+
+/* Las filas del medio se quedan normales con un separador suave */
+tbody tr {
+    border-bottom: 1px solid #e2e8f0;
+}
+
+
+/* FIN Página principal */

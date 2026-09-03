@@ -256,6 +256,38 @@ section {
     line-height: 1.4;
 }
 
+.contenido-farolillo {
+    display: flex;
+    align-items: center;
+    /* Centra el texto y la foto verticalmente */
+    justify-content: space-between;
+    gap: 15px;
+    /* Separación entre el texto y la foto */
+    margin-bottom: 15px;
+    /* Espacio con el botón de abajo */
+}
+
+.contenido-farolillo p {
+    margin: 0;
+    flex: 1;
+    /* El texto ocupa el espacio que sobra a la izquierda */
+}
+
+/* --- Estilo de la Foto --- */
+.foto-farolillo {
+    width: 180px;
+    /* Ancho fijo */
+    height: 180px;
+    /* Alto fijo */
+    object-fit: cover;
+    /* Evita que la foto se achate o deforme */
+    border-radius: 8px;
+    /* Bordes redondeados */
+    border: 2px solid #333333;
+    /* Un borde oscuro para que encaje con la tarjeta */
+}
+
+
 #btn-generar-ultimo {
     width: 100%;
     background: #db2028;
@@ -519,3 +551,360 @@ tbody tr {
 
 
 /* FIN Página principal */
+
+
+
+/* INICIO Panel Tesorero */
+
+/* --- Pestañas del Tesorero --- */
+.tabs-tesorero {
+    display: flex;
+    justify-content: space-between;
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 4px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.tab-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 10px 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: #666666;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tab-btn.activo {
+    background: #fff5f5;
+    /* Fondo rojizo suave */
+    color: #db2028;
+    /* Rojo Biwenger */
+}
+
+/* Sección Saldar Deudas */
+/* Colores personalizados para las tarjetas principales */
+.tarjeta-pendientes {
+    border-left: 6px solid #db2028 !important;
+    background-color: #fff5f5;
+}
+
+.tarjeta-historial {
+    border-left: 6px solid #28a745 !important;
+    background-color: #f0fdf4;
+}
+
+.lista-pagos {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Filas individuales limpias */
+.item-pago {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    padding: 10px 12px;
+    border-radius: 8px;
+    gap: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Reparto de columnas */
+.jornada-pago {
+    font-size: 11px;
+    color: #666666;
+    font-weight: 700;
+    flex: 1;
+}
+
+.nombre-pago {
+    font-weight: 700;
+    font-size: 14px;
+    color: #1a1a1a;
+    flex: 1.5;
+}
+
+.cantidad-rojo {
+    color: #db2028;
+    font-weight: 700;
+    font-size: 14px;
+    flex: 1;
+    text-align: right;
+}
+
+.cantidad-verde {
+    color: #28a745;
+    font-weight: 700;
+    font-size: 14px;
+    flex: 1;
+    text-align: right;
+}
+
+.btn-cobrar,
+.btn-deshacer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    padding: 8px;
+
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.btn-cobrar {
+    color: #28a745;
+}
+
+.btn-deshacer {
+    color: #94a3b8;
+}
+
+.btn-cobrar:active {
+    transform: scale(0.85);
+    background-color: #d1fae5;
+}
+
+.btn-deshacer:active {
+    transform: scale(0.85);
+    background-color: #e2e8f0;
+}
+
+/* Sección Añadir Deudas */
+.campo-formulario {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+}
+
+.campo-formulario label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 6px;
+}
+
+.input-tesorero {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    background-color: #f8f9fa;
+    color: #1a1a1a;
+    box-sizing: border-box;
+}
+
+/* Efecto al tocar la casilla para escribir */
+.input-tesorero:focus {
+    outline: none;
+    border-color: #db2028;
+    /* Se pone rojo Biwenger */
+    background-color: #ffffff;
+}
+
+.fila-formulario {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    align-items: flex-end;
+}
+
+.fila-formulario .campo-formulario {
+    margin-bottom: 0;
+}
+
+.campo-jugador {
+    flex: 2;
+}
+
+.campo-euros {
+    flex: 1;
+}
+
+.fila-formulario label {
+    font-size: 11px;
+}
+
+.fila-formulario .input-tesorero {
+    padding: 10px 4px;
+    font-size: 13px;
+}
+
+.btn-secundario {
+    width: 100%;
+    background: #f8f9fa;
+    color: #1a1a1a;
+    border: 2px solid #e2e8f0;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: all 0.2s ease;
+}
+
+.btn-secundario:hover,
+.btn-secundario:active {
+    background: #e2e8f0;
+    border-color: #cbd5e1;
+}
+
+.btn-principal {
+    width: 100%;
+    background: #db2028;
+    color: #ffffff;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.btn-principal:hover,
+.btn-principal:active {
+    background: #b81920;
+}
+
+.separador-tesorero {
+    border: 0;
+    border-top: 1px solid #e2e8f0;
+    margin-bottom: 20px;
+}
+
+.titulo-lista {
+    font-size: 14px;
+    margin-bottom: 10px;
+    color: #1a1a1a;
+}
+
+/* --- Lista de Deudas (Carrito) --- */
+.lista-carrito {
+    list-style: none;
+    /* Quitamos los puntos por defecto de las listas HTML */
+    padding: 0;
+    margin: 0 0 20px 0;
+}
+
+/* Estado 1: Lista vacía */
+.lista-vacia {
+    text-align: center;
+    color: #94a3b8;
+    /* Gris suave */
+    font-size: 14px;
+    font-style: italic;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px dashed #cbd5e1;
+    /* Borde de rayitas para indicar que es un hueco vacío */
+}
+
+/* Estado 2: Jugadores añadidos (Filas) */
+.item-carrito {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    /* Separación entre filas */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    border-left: 4px solid #1a1a1a;
+    /* Un borde negro elegante a la izquierda */
+}
+
+/* Textos de la fila */
+.info-carrito {
+    display: flex;
+    flex-direction: column;
+}
+
+.nombre-carrito {
+    font-weight: 700;
+    font-size: 14px;
+    color: #1a1a1a;
+}
+
+.detalle-carrito {
+    font-size: 11px;
+    color: #666666;
+    margin-top: 2px;
+}
+
+/* Zona derecha: Total y Papelera */
+.acciones-carrito {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.total-carrito {
+    font-weight: 800;
+    color: #db2028;
+    /* Rojo porque es una deuda que se está añadiendo */
+    font-size: 14px;
+}
+
+/* Botón Papelera SVG */
+.btn-eliminar-carrito {
+    background: transparent;
+    border: none;
+    color: #ef4444;
+    /* Rojo para borrar */
+    padding: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.1s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.btn-eliminar-carrito:active {
+    transform: scale(0.85);
+    background-color: #fee2e2;
+    /* Fondo rojo clarito al tocar */
+}
+
+/* --- Ocultar flechas numéricas (Spinners) --- */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+
+/* Sección Mensaje */
+.btn-copiado {
+    background-color: #28a745 !important;
+    color: white !important;
+    transition: all 0.3s ease;
+}
+
+.caja-whatsapp {
+    min-height: 250px;
+    resize: none;
+    line-height: 1.5;
+}
+
+/* FIN Panel Tesorero */

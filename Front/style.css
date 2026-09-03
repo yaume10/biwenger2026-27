@@ -573,7 +573,7 @@ tbody tr {
     border: none;
     padding: 10px 0;
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 900;
     color: #666666;
     border-radius: 6px;
     cursor: pointer;
@@ -789,6 +789,36 @@ tbody tr {
     font-size: 14px;
     margin-bottom: 10px;
     color: #1a1a1a;
+}
+
+/* --- Campo Global de Jornada --- */
+.campo-jornada-global {
+    text-align: center;
+    /* Centramos el texto y el input */
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 2px dashed #cbd5e1;
+    /* Rayita separadora */
+}
+
+/* Hacemos que el título destaque más */
+.campo-jornada-global label {
+    display: block;
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+/* Hacemos el cajón del número más grande y centrado */
+#tesorero-jornada {
+    text-align: center;
+    font-size: 20px;
+    color: #1e6d30;
+    font-weight: 900;
+    width: 80px;
+    margin: 0 auto;
+    padding: 10px;
+    height: auto;
 }
 
 /* --- Lista de Deudas (Carrito) --- */

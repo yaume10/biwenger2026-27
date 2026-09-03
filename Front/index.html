@@ -10,7 +10,7 @@
 
 <body>
     <!-- INICIO Login Jugador -->
-    <section id="login_jugador">
+    <section id="login_jugador" class="ocultoooo">
 
         <h2>¿Quién eres?</h2>
 
@@ -31,8 +31,10 @@
             <button class="btn-jugador">Xavi</button>
         </div>
 
-        <div class="enlace-admin">
-            <a href="tesorero.html">🔑 Tesorero</a>
+        <div class="enlace-admin" style="text-align: center; margin-top: 30px;">
+            <button id="btn-acceso-tesorero"
+                style="background: none; border: none; font-size: 14px; cursor: pointer; color: #666666; font-weight: bold;">🔑
+                Tesorero</button>
         </div>
     </section>
 
@@ -43,7 +45,8 @@
     <section id="popup_bienvenida" class="oculto">
 
         <div class="caja-popup">
-            <p id="texto-mensaje-bienvenida">Mesaje de bienvenida</p>
+            <p id="texto-mensaje-bienvenida">¡Hola Anup! ما أشرسك، ستدفع أكثر من أي شخص آخر ستدفع ثمن الطعام لنا جميعا
+            </p>
             <button id="btn-continuar">OK</button>
         </div>
 
@@ -55,7 +58,7 @@
 
         <header class="cabecera-app">
             <h1>Biwenger 2026-27</h1>
-            <button id="btn-cambiar-jugador">Cambiar de jugador</button>
+            <button id="btn-cambiar-jugador">Cambiar de usuario</button>
         </header>
 
         <!-- BLOQUE DEUDAS -->
@@ -67,14 +70,18 @@
         <!-- BLOQUE FAROLILLO -->
         <div class="tarjeta-farolillo">
             <h3>El Farolillo Rojo</h3>
-            <p id="texto-el-ultimo">No os olvidéis de reiros del pedazo de farolo *Nombre*</p>
+            <div class="contenido-farolillo">
+                <p id="texto-el-ultimo">Como farolo tenemos a Xavi. No perdáis la oportunidad de reiros de él</p>
+                <img src="foto_prueba.jpeg" alt="Foto del Farolillo" class="foto-farolillo">
+
+            </div>
             <button id="btn-generar-ultimo">Generar mensaje humillante</button>
         </div>
 
         <!-- POPUP: Mensaje del Farolillo Rojo -->
         <section id="popup-ultimo" class="oculto">
             <div class="caja-popup">
-                <p id="texto-popup-ultimo">Mensaje humillante</p>
+                <p id="texto-popup-ultimo">Mensaje humillante por ser farolo</p>
                 <button id="btn-copiar">Copiar mensaje</button>
                 <button id="btn-cerrar-popup-ultimo">Cerrar</button>
             </div>
@@ -185,5 +192,222 @@
 
     </section>
     <!-- FIN Pagina principal -->
+
+
+    <!-- INICIO Panel Tesorero -->
+    <section id="panel_tesorero" class="ocultooooooo">
+
+        <div class="cabecera-app">
+            <h1>Panel del Tesorero</h1>
+            <button id="btn-cambiar-jugador">Volver</button>
+        </div>
+
+        <!-- Menú de Pestañas -->
+        <div class="tabs-tesorero">
+            <button class="tab-btn activo" id="btn-tab-saldar">💰 Saldar</button>
+            <button class="tab-btn" id="btn-tab-anadir">📝 Añadir</button>
+            <button class="tab-btn" id="btn-tab-mensaje">📱 Mensaje</button>
+        </div>
+
+        <!-- ==================== -->
+        <!-- PESTAÑA 1: SALDAR (Visible por defecto) -->
+        <!-- ==================== -->
+        <div id="contenido-tab-saldar" class="tab-contenido">
+
+            <!-- Tarjeta 1: Deudas Activas -->
+            <div class="tarjeta-clasificacion tarjeta-pendientes">
+                <h3>Deudas Pendientes</h3>
+                <div class="lista-pagos">
+                    <!-- Ejemplo 1 -->
+                    <div class="item-pago">
+                        <span class="jornada-pago">Jornada 1</span>
+                        <span class="nombre-pago">Victor Hugo</span>
+                        <span class="cantidad-rojo">-2.00€</span>
+                        <button class="btn-cobrar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                                stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                    <!-- Ejemplo 2 -->
+                    <div class="item-pago">
+                        <span class="jornada-pago">Jornada 11</span>
+                        <span class="nombre-pago">Xavi</span>
+                        <span class="cantidad-rojo">-4.00€</span>
+                        <button class="btn-cobrar">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                                stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta 2: Historial (Últimos pagos) -->
+            <div class="tarjeta-clasificacion tarjeta-historial">
+                <h3>Últimos Pagos</h3>
+                <div class="lista-pagos">
+                    <!-- Ejemplo de alguien que ya pagó -->
+                    <div class="item-pago">
+                        <span class="jornada-pago">Jornada 1</span>
+                        <span class="nombre-pago">Dani Haro</span>
+                        <span class="cantidad-verde">+3.00€</span>
+                        <button class="btn-deshacer">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+                                <path d="M3 7v6h6"></path>
+                                <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- ==================== -->
+        <!-- PESTAÑA 2: AÑADIR    -->
+        <!-- ==================== -->
+        <div id="contenido-tab-anadir" class="tab-contenido oculto">
+            <div class="tarjeta-clasificacion">
+                <h3>Añadir Deudas de la Jornada</h3>
+
+                <div class="fila-formulario">
+                    <div class="campo-formulario campo-jugador">
+                        <label>Jugador:</label>
+                        <select id="tesorero-jugador" class="input-tesorero">
+                            <option value="">-- Elige --</option>
+                            <option value="Alejo">Alejo</option>
+                            <option value="Beltran">Beltran</option>
+                        </select>
+                    </div>
+
+                    <div class="campo-formulario campo-euros">
+                        <label>€ Pos.</label>
+                        <input type="number" id="tesorero-posicion" class="input-tesorero" placeholder="0">
+                    </div>
+
+                    <div class="campo-formulario campo-euros">
+                        <label>€ Rojas</label>
+                        <input type="number" id="tesorero-rojas" class="input-tesorero" placeholder="0">
+                    </div>
+                </div>
+
+                <button id="btn-anadir-lista" class="btn-secundario">+ Añadir a la lista</button>
+
+                <hr class="separador-tesorero">
+
+                <h4 class="titulo-lista">Lista para esta jornada:</h4>
+                <ul id="lista-deudas-pendientes" class="lista-carrito">
+                    <!-- Este texto lo ocultaremos con JavaScript cuando haya gente en la lista -->
+                    <li id="texto-lista-vacia" class="lista-vacia oculto">No hay jugadores en la lista.</li>
+
+                    <!-- Ejemplo de jugador 1 añadido -->
+                    <li class="item-carrito">
+                        <div class="info-carrito">
+                            <span class="nombre-carrito">Alejo</span>
+                            <span class="detalle-carrito">Pos: 15.50€ | Roj: 0.00€</span>
+                        </div>
+                        <div class="acciones-carrito">
+                            <span class="total-carrito">15.50€</span>
+                            <!-- Botón de papelera en SVG -->
+                            <button class="btn-eliminar-carrito">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                                    <path d="M3 6h18"></path>
+                                    <path
+                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                    </path>
+                                </svg>
+                            </button>
+                        </div>
+                    </li>
+
+                    <!-- Ejemplo de jugador 2 añadido -->
+                    <li class="item-carrito">
+                        <div class="info-carrito">
+                            <span class="nombre-carrito">Victor Hugo</span>
+                            <span class="detalle-carrito">Pos: 5.00€ | Roj: 0.00€</span>
+                        </div>
+                        <div class="acciones-carrito">
+                            <span class="total-carrito">5.00€</span>
+                            <button class="btn-eliminar-carrito">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                                    <path d="M3 6h18"></path>
+                                    <path
+                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                    </path>
+                                </svg>
+                            </button>
+                        </div>
+                    </li>
+                </ul>
+
+                <button id="btn-guardar-jornada" class="btn-principal">Guardar Jornada Completa</button>
+            </div>
+        </div>
+
+
+
+        <!-- ==================== -->
+        <!-- PESTAÑA 3: MENSAJE   -->
+        <!-- ==================== -->
+        <div id="contenido-tab-mensaje" class="tab-contenido oculto">
+
+            <!-- TARJETA 1: Resumen de deudas por jornada -->
+            <div class="tarjeta-clasificacion">
+                <h3>Resumen de la Jornada</h3>
+                <p class="texto-ayuda-mensaje">Este texto se genera automáticamente con las deudas pendientes. Cópialo y
+                    pégalo en WhatsApp.</p>
+
+                <div class="campo-formulario">
+                    <textarea id="texto-whatsapp" class="input-tesorero caja-whatsapp" readonly>
+🚨 *DEUDAS PENDIENTES* 🚨
+
+*Jornada 12*
+🔴 Alejo: 15.50€
+🔴 Victor Hugo: 5.00€
+
+*Jornada 11*
+🔴 Jaume: 3.20€🙏</textarea>
+                </div>
+
+                <button id="btn-copiar-whatsapp" class="btn-principal">
+                    📋 Copiar Mensaje
+                </button>
+            </div>
+
+            <!-- TARJETA 2: Clasificación General y Enlace Web -->
+            <div class="tarjeta-clasificacion" style="margin-top: 15px;">
+                <h3>Clasificación y Totales</h3>
+                <p class="texto-ayuda-mensaje">Mensaje con el estado general de la liga y enlace directo a la web.</p>
+
+                <div class="campo-formulario">
+                    <textarea id="texto-whatsapp-general" class="input-tesorero caja-whatsapp" readonly>
+🏆 *Clasificación Actualizada* 🏆
+
+1️⃣ Alejo: -15.50€
+2️⃣ Victor Hugo: -5.00€
+3️⃣ Beltran: 0.00€
+...
+ Podéis ver todos los detalles aquí:
+https://tu-web-de-la-liga.com</textarea>
+                </div>
+
+                <button id="btn-copiar-general" class="btn-principal">
+                    📋 Copiar Clasificación General
+                </button>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <script src="script.js"></script>
 
 </body>

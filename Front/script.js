@@ -147,73 +147,35 @@ btnAnadir.addEventListener('click', () => cambiarPestanaTesorero(btnAnadir, cont
 btnMensaje.addEventListener('click', () => cambiarPestanaTesorero(btnMensaje, contenidoMensaje));
 
 // ==========================================
-// EFECTOS DE BOTONES: GUARDAR Y COPIAR
+// 1. VARIABLES GLOBALES Y MOCHILAS
 // ==========================================
 
-// 1. Seleccionamos los tres botones
+// Seleccionamos los botones de acción
 const btnGuardarJornada = document.getElementById('btn-guardar-jornada');
 const btnCopiarWhatsapp = document.getElementById('btn-copiar-whatsapp');
 const btnCopiarGeneral = document.getElementById('btn-copiar-general');
 
-// 2. Función maestra para el efecto visual de "Éxito"
-function mostrarExitoBoton(boton, textoExito) {
-    // Guardamos el texto original del botón (con su icono)
-    const textoOriginal = boton.innerHTML;
+// 🛒 CARRITO TEMPORAL (Los jugadores que ves en pantalla antes de guardar)
+let carritoTemporal = [];
 
-    // Le ponemos el texto nuevo (ej: "✅ ¡Copiado!") y la clase verde
+// 🎒 MOCHILA DEFINITIVA (Donde se guardan las jornadas confirmadas para el WhatsApp)
+let mochilaDeudas = [];
+
+// Función maestra para el efecto visual de "Éxito"
+function mostrarExitoBoton(boton, textoExito) {
+    const textoOriginal = boton.innerHTML;
     boton.innerHTML = `✅ ${textoExito}`;
     boton.classList.add('btn-copiado');
 
-    // Programamos un temporizador: a los 2000 milisegundos (2 segundos), vuelve a la normalidad
     setTimeout(() => {
         boton.innerHTML = textoOriginal;
         boton.classList.remove('btn-copiado');
     }, 2000);
 }
 
-// 3. Evento para el botón de "Guardar Jornada"
-if (btnGuardarJornada) {
-    btnGuardarJornada.addEventListener('click', () => {
-        // Por ahora solo hace el efecto visual. ¡Más adelante aquí guardaremos los datos en MySQL!
-        mostrarExitoBoton(btnGuardarJornada, '¡Guardado!');
-    });
-}
-
-// 4. Evento para "Copiar Mensaje" (WhatsApp)
-if (btnCopiarWhatsapp) {
-    btnCopiarWhatsapp.addEventListener('click', () => {
-        // Cogemos el texto que hay dentro del textarea
-        const texto = document.getElementById('texto-whatsapp').value;
-
-        // Lo copiamos al portapapeles real del dispositivo
-        navigator.clipboard.writeText(texto).then(() => {
-            // Si se copia bien, disparamos el efecto visual
-            mostrarExitoBoton(btnCopiarWhatsapp, '¡Copiado!');
-        });
-    });
-}
-
-// 5. Evento para "Copiar Clasificación General"
-if (btnCopiarGeneral) {
-    btnCopiarGeneral.addEventListener('click', () => {
-        // Cogemos el texto de la segunda caja
-        const texto = document.getElementById('texto-whatsapp-general').value;
-
-        // Lo copiamos al portapapeles
-        navigator.clipboard.writeText(texto).then(() => {
-            mostrarExitoBoton(btnCopiarGeneral, '¡Copiado!');
-        });
-    });
-}
-
-
 // ==========================================
-// LÓGICA: AÑADIR A LA LISTA DEL TESORERO
+// 2. LÓGICA: AÑADIR JUGADOR AL CARRITO (PANTALLA)
 // ==========================================
-
-// 🎒 AQUÍ ESTÁ NUESTRA MOCHILA (Array vacío)
-let mochilaDeudas = [];
-
 const btnAnadirLista = document.getElementById('btn-anadir-lista');
 const listaDeudas = document.getElementById('lista-deudas-pendientes');
 const textoListaVacia = document.getElementById('texto-lista-vacia');
@@ -225,7 +187,7 @@ const inputRojas = document.getElementById('tesorero-rojas');
 if (btnAnadirLista) {
     btnAnadirLista.addEventListener('click', () => {
 
-        // 1. Recogemos los valores
+        // Recogemos los valores del jugador
         const jugador = inputJugador.value;
         const eurosPos = parseFloat(inputPosicion.value) || 0;
         const eurosRoj = parseFloat(inputRojas.value) || 0;
@@ -242,27 +204,22 @@ if (btnAnadirLista) {
             return;
         }
 
-        // --- NUEVO: GUARDAMOS EN LA MOCHILA ---
-        // Creamos una "ficha" con los datos bien ordenaditos para la base de datos
-        const fichaDeuda = {
+        // --- GUARDAMOS EN EL CARRITO TEMPORAL (Todavía no hay jornada) ---
+        const fichaTemporal = {
             nombre: jugador,
             eurosPosicion: eurosPos,
             eurosRojas: eurosRoj,
             total: total
         };
 
-        // Metemos la ficha en la mochila
-        mochilaDeudas.push(fichaDeuda);
-        actualizarMensajeWhatsApp();
-        // --------------------------------------
+        carritoTemporal.push(fichaTemporal);
+        // -----------------------------------------------------------------
 
-        // 3. Ocultamos el texto de "lista vacía"
         textoListaVacia.classList.add('oculto');
 
-        // 4. Creamos la fila HTML
+        // Creamos la fila HTML visual
         const nuevaFila = document.createElement('li');
         nuevaFila.className = 'item-carrito';
-
         nuevaFila.innerHTML = `
             <div class="info-carrito">
                 <span class="nombre-carrito">${jugador}</span>
@@ -279,27 +236,22 @@ if (btnAnadirLista) {
             </div>
         `;
 
-        // 5. La papelera (borrar HTML y sacar de la mochila)
+        // Lógica de la papelera
         const btnBorrar = nuevaFila.querySelector('.btn-eliminar-carrito');
         btnBorrar.addEventListener('click', () => {
-            nuevaFila.remove(); // El navegador borra la fila visual
+            nuevaFila.remove(); // Borra de la pantalla
 
-            // --- NUEVO: SACAMOS AL JUGADOR DE LA MOCHILA ---
-            // Le decimos a la mochila: "Quédate solo con los que NO se llamen como este jugador"
-            mochilaDeudas = mochilaDeudas.filter(item => item.nombre !== jugador);
-
-            actualizarMensajeWhatsApp();
-            // -----------------------------------------------
+            // Borramos solo de nuestro carrito temporal
+            carritoTemporal = carritoTemporal.filter(item => item !== fichaTemporal);
 
             if (listaDeudas.children.length === 1) {
                 textoListaVacia.classList.remove('oculto');
             }
         });
 
-        // 6. Pegamos la fila en la pantalla
         listaDeudas.appendChild(nuevaFila);
 
-        // 7. Limpiamos los campos
+        // Limpiamos los campos para el siguiente jugador
         inputJugador.value = "";
         inputPosicion.value = "";
         inputRojas.value = "";
@@ -307,70 +259,112 @@ if (btnAnadirLista) {
 }
 
 // ==========================================
-// EVENTO: ERROR BOTÓN GUARDAR JORNADA SIN JORNADA
+// 3. EVENTO: GUARDAR JORNADA COMPLETA
 // ==========================================
 if (btnGuardarJornada) {
     btnGuardarJornada.addEventListener('click', () => {
-
-        // 1. Miramos qué hay escrito en la caja de la jornada
         const inputJornada = document.getElementById('tesorero-jornada');
+        const numJornada = inputJornada.value;
 
-        // --- VALIDACIÓN ÚNICA: ¿Está vacío? ---
-        // Si el campo está completamente vacío...
-        if (inputJornada.value.trim() === "") {
+        // VALIDACIÓN 1: ¿Ha puesto jornada?
+        if (numJornada.trim() === "") {
             alert("⚠️ ¡Falta la Jornada! Escribe el número arriba antes de guardar.");
-            inputJornada.focus(); // Este truco mueve la pantalla y pone el cursor en la caja automáticamente
-            return; // El "return" frena el código aquí, no se guarda nada
+            inputJornada.focus();
+            return;
         }
 
-        // --- TRUCO PARA VER LA MOCHILA ---
-        console.log("JORNADA A GUARDAR:", inputJornada.value);
-        console.log("DATOS EN LA MOCHILA:", mochilaDeudas);
-        // ---------------------------------
+        // VALIDACIÓN 2: ¿Hay alguien en el carrito?
+        if (carritoTemporal.length === 0) {
+            alert("⚠️ Añade al menos a un jugador a la lista antes de guardar la jornada.");
+            return;
+        }
 
-        // Si ha superado el bloqueo (sí hay un número), hacemos el efecto de éxito
+        // --- MAGIA: PASAMOS DEL CARRITO A LA MOCHILA ---
+        // Le aplicamos el número de jornada a todos los que estaban esperando en el carrito
+        carritoTemporal.forEach(ficha => {
+            mochilaDeudas.push({
+                jornada: numJornada, // Le ponemos la pegatina de la jornada a todos
+                nombre: ficha.nombre,
+                eurosPosicion: ficha.eurosPosicion,
+                eurosRojas: ficha.eurosRojas,
+                total: ficha.total
+            });
+        });
+
+        // AHORA SÍ, actualizamos el WhatsApp con las deudas definitivas
+        actualizarMensajeWhatsApp();
+
         mostrarExitoBoton(btnGuardarJornada, '¡Guardado!');
 
-        // (Aquí irá en el futuro el código para enviar los datos a MySQL)
+        // --- LIMPIEZA VISUAL Y DEL CARRITO TEMPORAL ---
+
+        carritoTemporal = []; // Vaciamos el carrito de espera
+
+        const itemsEnPantalla = document.querySelectorAll('.item-carrito');
+        itemsEnPantalla.forEach(item => item.remove());
+
+        if (textoListaVacia) {
+            textoListaVacia.classList.remove('oculto');
+        }
+
+        inputJornada.value = ""; // Vaciamos la jornada
     });
 }
 
-
-
 // ==========================================
-// GENERADOR AUTOMÁTICO DE WHATSAPP
+// 4. GENERADOR AUTOMÁTICO DE WHATSAPP
 // ==========================================
 function actualizarMensajeWhatsApp() {
-    const inputJornada = document.getElementById('tesorero-jornada').value;
     const textareaWhatsapp = document.getElementById('texto-whatsapp');
+    let mensaje = `🚨 *DEUDAS PENDIENTES* 🚨\n\n`;
 
-    // Si no ha puesto jornada todavía, ponemos un texto por defecto
-    const textoJornada = inputJornada.trim() !== "" ? `*Jornada ${inputJornada}*` : '*Jornada (Sin especificar)*';
-
-    // 1. Empezamos a construir el mensaje con la cabecera
-    let mensaje = `🚨 *DEUDAS PENDIENTES* 🚨\n\n${textoJornada}\n`;
-
-    // 2. Recorremos la mochila y añadimos una línea por cada jugador
+    // Ahora leemos de la mochila definitiva, no del carrito temporal
     if (mochilaDeudas.length === 0) {
-        mensaje += `✅ Todos al día, no hay deudas nuevas.\n`;
+        mensaje += `✅ Todos al día, no hay deudas nuevas.\n\n`;
     } else {
-        // El forEach es un bucle que repite esta acción por cada ficha de la mochila
+        const deudasAgrupadas = {};
+
         mochilaDeudas.forEach(ficha => {
-            mensaje += `🔴 ${ficha.nombre}: ${ficha.total.toFixed(2)}€\n`;
+            if (!deudasAgrupadas[ficha.jornada]) {
+                deudasAgrupadas[ficha.jornada] = [];
+            }
+            deudasAgrupadas[ficha.jornada].push(ficha);
         });
+
+        for (const jornada in deudasAgrupadas) {
+            mensaje += `*Jornada ${jornada}*\n`;
+
+            deudasAgrupadas[jornada].forEach(ficha => {
+                mensaje += `🔴 ${ficha.nombre}: ${ficha.total.toFixed(2)}€\n`;
+            });
+            mensaje += `\n`;
+        }
     }
 
-    // 3. Añadimos el texto final
-    mensaje += `\n💸 Por favor, id haciendo los Bizum al tesorero. ¡Gracias! 🙏`;
+    mensaje += `💸 Por favor, id haciendo los Bizum al tesorero. ¡Gracias! 🙏`;
 
-    // 4. Metemos todo este texto dentro del textarea de la pestaña 3
     if (textareaWhatsapp) {
         textareaWhatsapp.value = mensaje;
     }
 }
 
-// Hacemos que si el tesorero cambia el número de jornada, se actualice el texto al instante
-const inputJornada = document.getElementById('tesorero-jornada');
-if (inputJornada) {
-    inputJornada.addEventListener('input', actualizarMensajeWhatsApp);
+// ==========================================
+// 5. EVENTOS: BOTONES DE COPIAR PORTAPAPELES
+// ==========================================
+if (btnCopiarWhatsapp) {
+    btnCopiarWhatsapp.addEventListener('click', () => {
+        const texto = document.getElementById('texto-whatsapp').value;
+        navigator.clipboard.writeText(texto).then(() => {
+            mostrarExitoBoton(btnCopiarWhatsapp, '¡Copiado!');
+        });
+    });
+}
+
+if (btnCopiarGeneral) {
+    btnCopiarGeneral.addEventListener('click', () => {
+        const texto = document.getElementById('texto-whatsapp-general').value;
+        navigator.clipboard.writeText(texto).then(() => {
+            mostrarExitoBoton(btnCopiarGeneral, '¡Copiado!');
+        });
+    });
 }

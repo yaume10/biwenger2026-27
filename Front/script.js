@@ -253,6 +253,7 @@ if (btnAnadirLista) {
 
         // Metemos la ficha en la mochila
         mochilaDeudas.push(fichaDeuda);
+        actualizarMensajeWhatsApp();
         // --------------------------------------
 
         // 3. Ocultamos el texto de "lista vacía"
@@ -286,6 +287,8 @@ if (btnAnadirLista) {
             // --- NUEVO: SACAMOS AL JUGADOR DE LA MOCHILA ---
             // Le decimos a la mochila: "Quédate solo con los que NO se llamen como este jugador"
             mochilaDeudas = mochilaDeudas.filter(item => item.nombre !== jugador);
+
+            actualizarMensajeWhatsApp();
             // -----------------------------------------------
 
             if (listaDeudas.children.length === 1) {
@@ -330,4 +333,44 @@ if (btnGuardarJornada) {
 
         // (Aquí irá en el futuro el código para enviar los datos a MySQL)
     });
+}
+
+
+
+// ==========================================
+// GENERADOR AUTOMÁTICO DE WHATSAPP
+// ==========================================
+function actualizarMensajeWhatsApp() {
+    const inputJornada = document.getElementById('tesorero-jornada').value;
+    const textareaWhatsapp = document.getElementById('texto-whatsapp');
+
+    // Si no ha puesto jornada todavía, ponemos un texto por defecto
+    const textoJornada = inputJornada.trim() !== "" ? `*Jornada ${inputJornada}*` : '*Jornada (Sin especificar)*';
+
+    // 1. Empezamos a construir el mensaje con la cabecera
+    let mensaje = `🚨 *DEUDAS PENDIENTES* 🚨\n\n${textoJornada}\n`;
+
+    // 2. Recorremos la mochila y añadimos una línea por cada jugador
+    if (mochilaDeudas.length === 0) {
+        mensaje += `✅ Todos al día, no hay deudas nuevas.\n`;
+    } else {
+        // El forEach es un bucle que repite esta acción por cada ficha de la mochila
+        mochilaDeudas.forEach(ficha => {
+            mensaje += `🔴 ${ficha.nombre}: ${ficha.total.toFixed(2)}€\n`;
+        });
+    }
+
+    // 3. Añadimos el texto final
+    mensaje += `\n💸 Por favor, id haciendo los Bizum al tesorero. ¡Gracias! 🙏`;
+
+    // 4. Metemos todo este texto dentro del textarea de la pestaña 3
+    if (textareaWhatsapp) {
+        textareaWhatsapp.value = mensaje;
+    }
+}
+
+// Hacemos que si el tesorero cambia el número de jornada, se actualice el texto al instante
+const inputJornada = document.getElementById('tesorero-jornada');
+if (inputJornada) {
+    inputJornada.addEventListener('input', actualizarMensajeWhatsApp);
 }

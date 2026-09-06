@@ -649,7 +649,8 @@ tbody tr {
 }
 
 .btn-cobrar,
-.btn-deshacer {
+.btn-deshacer,
+.btn-borrar-error {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -671,6 +672,11 @@ tbody tr {
     color: #94a3b8;
 }
 
+.btn-borrar-error {
+    color: #9ca3af;
+    /* Gris por defecto para que no llame la atención */
+}
+
 .btn-cobrar:active {
     transform: scale(0.85);
     background-color: #d1fae5;
@@ -680,6 +686,13 @@ tbody tr {
     transform: scale(0.85);
     background-color: #e2e8f0;
 }
+
+.btn-borrar-error:active {
+    transform: scale(0.85);
+    background-color: #fee2e2;
+    color: #db2028;
+}
+
 
 /* Sección Añadir Deudas */
 .campo-formulario {
@@ -794,11 +807,8 @@ tbody tr {
 /* --- Campo Global de Jornada --- */
 .campo-jornada-global {
     text-align: center;
-    /* Centramos el texto y el input */
-    margin-bottom: 25px;
+    margin-bottom: 0px;
     padding-bottom: 20px;
-    border-bottom: 2px dashed #cbd5e1;
-    /* Rayita separadora */
 }
 
 /* Hacemos que el título destaque más */

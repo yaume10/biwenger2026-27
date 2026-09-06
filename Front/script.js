@@ -147,9 +147,10 @@ btnAnadir.addEventListener('click', () => cambiarPestanaTesorero(btnAnadir, cont
 btnMensaje.addEventListener('click', () => cambiarPestanaTesorero(btnMensaje, contenidoMensaje));
 
 // ==========================================
-// 1. VARIABLES GLOBALES Y MOCHILAS
+//  PESTAÑA AÑADIR DEUDAS
 // ==========================================
 
+// 1. VARIABLES GLOBALES Y MOCHILAS
 // Seleccionamos los botones de acción
 const btnGuardarJornada = document.getElementById('btn-guardar-jornada');
 const btnCopiarWhatsapp = document.getElementById('btn-copiar-whatsapp');
@@ -173,9 +174,7 @@ function mostrarExitoBoton(boton, textoExito) {
     }, 2000);
 }
 
-// ==========================================
 // 2. LÓGICA: AÑADIR JUGADOR AL CARRITO (PANTALLA)
-// ==========================================
 const btnAnadirLista = document.getElementById('btn-anadir-lista');
 const listaDeudas = document.getElementById('lista-deudas-pendientes');
 const textoListaVacia = document.getElementById('texto-lista-vacia');
@@ -258,9 +257,7 @@ if (btnAnadirLista) {
     });
 }
 
-// ==========================================
 // 3. EVENTO: GUARDAR JORNADA COMPLETA
-// ==========================================
 if (btnGuardarJornada) {
     btnGuardarJornada.addEventListener('click', () => {
         const inputJornada = document.getElementById('tesorero-jornada');
@@ -293,6 +290,8 @@ if (btnGuardarJornada) {
 
         // AHORA SÍ, actualizamos el WhatsApp con las deudas definitivas
         actualizarMensajeWhatsApp();
+        actualizarPantallaSaldar();
+        actualizarMensajeGeneral();
 
         mostrarExitoBoton(btnGuardarJornada, '¡Guardado!');
 
@@ -311,9 +310,7 @@ if (btnGuardarJornada) {
     });
 }
 
-// ==========================================
 // 4. GENERADOR AUTOMÁTICO DE WHATSAPP
-// ==========================================
 function actualizarMensajeWhatsApp() {
     const textareaWhatsapp = document.getElementById('texto-whatsapp');
     let mensaje = `🚨 *DEUDAS PENDIENTES* 🚨\n\n`;
@@ -348,9 +345,7 @@ function actualizarMensajeWhatsApp() {
     }
 }
 
-// ==========================================
 // 5. EVENTOS: BOTONES DE COPIAR PORTAPAPELES
-// ==========================================
 if (btnCopiarWhatsapp) {
     btnCopiarWhatsapp.addEventListener('click', () => {
         const texto = document.getElementById('texto-whatsapp').value;
@@ -367,4 +362,164 @@ if (btnCopiarGeneral) {
             mostrarExitoBoton(btnCopiarGeneral, '¡Copiado!');
         });
     });
+}
+
+
+// ==========================================
+// PESTAÑA SALDAR Y CORREGIR ERRORES
+// ==========================================
+
+// Mochila para los pagos realizados (historial)
+let historialPagos = [];
+
+function actualizarPantallaSaldar() {
+    // Buscamos tus contenedores exactos
+    const contenedorPendientes = document.querySelector('.tarjeta-pendientes .lista-pagos');
+    const contenedorHistorial = document.querySelector('.tarjeta-historial .lista-pagos');
+
+    if (!contenedorPendientes || !contenedorHistorial) return;
+
+    // 1. Vaciamos las listas para volver a pintarlas actualizadas
+    contenedorPendientes.innerHTML = '';
+    contenedorHistorial.innerHTML = '';
+
+    // --- RENDERIZAR DEUDAS PENDIENTES ---
+    if (mochilaDeudas.length === 0) {
+        contenedorPendientes.innerHTML = `<p class="texto-ayuda-mensaje" style="text-align:center; padding: 10px;">No hay deudas pendientes.</p>`;
+    } else {
+        mochilaDeudas.forEach((ficha, index) => {
+            const divItem = document.createElement('div');
+            divItem.className = 'item-pago'; // Usamos tu clase exacta
+
+            // Inyectamos tu HTML con la papelera de 12x12 a la izquierda
+            divItem.innerHTML = `
+                <button class="btn-borrar-error" title="Borrar por error">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12">
+                        <path d="M3 6h18"></path>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                    </svg>
+                </button>
+
+                <span class="jornada-pago">Jornada ${ficha.jornada}</span>
+                <span class="nombre-pago">${ficha.nombre}</span>
+                <span class="cantidad-rojo">-${ficha.total.toFixed(2)}€</span>
+                
+                <button class="btn-cobrar" title="Marcar como pagado">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </button>
+            `;
+
+            // Acción: BORRAR POR ERROR (Papelera)
+            const btnBorrar = divItem.querySelector('.btn-borrar-error');
+            btnBorrar.addEventListener('click', () => {
+                if (confirm(`⚠️ ¿Borrar la deuda de ${ficha.nombre} (Jornada ${ficha.jornada})?`)) {
+                    mochilaDeudas.splice(index, 1); // Se elimina totalmente
+                    actualizarPantallaSaldar();
+                    actualizarMensajeWhatsApp();
+                    actualizarMensajeGeneral();
+                }
+            });
+
+            // Acción: COBRAR (Verde)
+            const btnCobrar = divItem.querySelector('.btn-cobrar');
+            btnCobrar.addEventListener('click', () => {
+                if (confirm(`¿Marcar los ${ficha.total.toFixed(2)}€ de ${ficha.nombre} como PAGADOS?`)) {
+                    const [deudaCobrada] = mochilaDeudas.splice(index, 1);
+                    historialPagos.unshift(deudaCobrada); // Pasa al principio del historial
+                    actualizarPantallaSaldar();
+                    actualizarMensajeWhatsApp();
+                }
+            });
+
+            contenedorPendientes.appendChild(divItem);
+        });
+    }
+
+    // --- RENDERIZAR HISTORIAL DE ÚLTIMOS PAGOS ---
+    if (historialPagos.length === 0) {
+        contenedorHistorial.innerHTML = `<p class="texto-ayuda-mensaje" style="text-align:center; padding: 10px;">No hay pagos recientes.</p>`;
+    } else {
+        historialPagos.forEach((ficha, index) => {
+            const divItem = document.createElement('div');
+            divItem.className = 'item-pago';
+
+            divItem.innerHTML = `
+                <span class="jornada-pago">Jornada ${ficha.jornada}</span>
+                <span class="nombre-pago">${ficha.nombre}</span>
+                <span class="cantidad-verde">+${ficha.total.toFixed(2)}€</span>
+                <button class="btn-deshacer" title="Deshacer pago">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
+                        <path d="M3 7v6h6"></path>
+                        <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
+                    </svg>
+                </button>
+            `;
+
+            // Acción: DESHACER PAGO
+            const btnDeshacer = divItem.querySelector('.btn-deshacer');
+            btnDeshacer.addEventListener('click', () => {
+                if (confirm(`¿Deshacer el pago de ${ficha.nombre} y que vuelva a aparecer como deuda?`)) {
+                    const [pagoDevuelto] = historialPagos.splice(index, 1);
+                    mochilaDeudas.push(pagoDevuelto); // Vuelve a Pendientes
+                    actualizarPantallaSaldar();
+                    actualizarMensajeWhatsApp();
+                }
+            });
+
+            contenedorHistorial.appendChild(divItem);
+        });
+    }
+}
+
+// ==========================================
+//  MENSAJE AUTOMÁTICO: CLASIFICACIÓN GENERAL
+// ==========================================
+function actualizarMensajeGeneral() {
+    const textareaGeneral = document.getElementById('texto-whatsapp-general');
+    if (!textareaGeneral) return; // Si no existe la caja, no hacemos nada
+
+    // 1. Juntamos todas las deudas (las pendientes y las ya pagadas)
+    const todasLasDeudas = [...mochilaDeudas, ...historialPagos];
+
+    // 2. Sumamos el total por cada jugador
+    const totalesPorJugador = {};
+    todasLasDeudas.forEach(ficha => {
+        if (!totalesPorJugador[ficha.nombre]) {
+            totalesPorJugador[ficha.nombre] = 0;
+        }
+        totalesPorJugador[ficha.nombre] += ficha.total;
+    });
+
+    // 3. Convertimos ese resumen en una lista
+    const listaJugadores = Object.keys(totalesPorJugador).map(nombre => {
+        return {
+            nombre: nombre,
+            total: totalesPorJugador[nombre]
+        };
+    });
+
+    // 4. Los ordenamos alfabéticamente para que la lista quede ordenada
+    listaJugadores.sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+    // 5. Construimos el mensaje de WhatsApp (Enlace arriba del todo)
+    let mensaje = `🏆 *Clasificación Actualizada* 🏆\n\n`;
+    mensaje += `Podéis ver todos los detalles aquí:\nhttps://tu-web-de-la-liga.com\n\n`;
+
+    if (listaJugadores.length === 0) {
+        mensaje += `Todavía no hay deudas registradas.\n`;
+    } else {
+        listaJugadores.forEach(jugador => {
+            // Usamos Math.abs() por si acaso para asegurar que el número siempre sea positivo,
+            // y hemos quitado el "-" que había antes del símbolo del euro.
+            const importeLimpio = Math.abs(jugador.total).toFixed(2);
+            mensaje += `${jugador.nombre}: ${importeLimpio}€\n`;
+        });
+    }
+
+    // 6. Inyectamos el texto en su caja correspondiente
+    textareaGeneral.value = mensaje;
 }

@@ -195,7 +195,7 @@
 
 
     <!-- INICIO Panel Tesorero -->
-    <section id="panel_tesorero" class="ocultooooo">
+    <section id="panel_tesorero" class="oculto">
 
         <div class="cabecera-app">
             <h1>Panel del Tesorero</h1>
@@ -218,30 +218,7 @@
             <div class="tarjeta-clasificacion tarjeta-pendientes">
                 <h3>Deudas Pendientes</h3>
                 <div class="lista-pagos">
-                    <!-- Ejemplo 1 -->
-                    <div class="item-pago">
-                        <span class="jornada-pago">Jornada 1</span>
-                        <span class="nombre-pago">Victor Hugo</span>
-                        <span class="cantidad-rojo">-2.00€</span>
-                        <button class="btn-cobrar">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
-                                stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                        </button>
-                    </div>
-                    <!-- Ejemplo 2 -->
-                    <div class="item-pago">
-                        <span class="jornada-pago">Jornada 11</span>
-                        <span class="nombre-pago">Xavi</span>
-                        <span class="cantidad-rojo">-4.00€</span>
-                        <button class="btn-cobrar">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
-                                stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
-                                <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                        </button>
-                    </div>
+
                 </div>
             </div>
 
@@ -249,19 +226,7 @@
             <div class="tarjeta-clasificacion tarjeta-historial">
                 <h3>Últimos Pagos</h3>
                 <div class="lista-pagos">
-                    <!-- Ejemplo de alguien que ya pagó -->
-                    <div class="item-pago">
-                        <span class="jornada-pago">Jornada 1</span>
-                        <span class="nombre-pago">Dani Haro</span>
-                        <span class="cantidad-verde">+3.00€</span>
-                        <button class="btn-deshacer">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                                stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
-                                <path d="M3 7v6h6"></path>
-                                <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
-                            </svg>
-                        </button>
-                    </div>
+
                 </div>
             </div>
 
@@ -310,7 +275,7 @@
                 <div class="campo-formulario campo-jornada-global">
                     <label>JORNADA (1 a 38)</label>
                     <input type="number" id="tesorero-jornada" class="input-tesorero" min="1" max="38"
-                        placeholder="Ej: 12">
+                        placeholder="Ej:8">
                 </div>
 
                 <ul id="lista-deudas-pendientes" class="lista-carrito">
@@ -359,14 +324,7 @@
 
                 <div class="campo-formulario">
                     <textarea id="texto-whatsapp-general" class="input-tesorero caja-whatsapp" readonly>
-🏆 *Clasificación Actualizada* 🏆
-
-1️⃣ Alejo: -15.50€
-2️⃣ Victor Hugo: -5.00€
-3️⃣ Beltran: 0.00€
-...
- Podéis ver todos los detalles aquí:
-https://tu-web-de-la-liga.com</textarea>
+                    </textarea>
                 </div>
 
                 <button id="btn-copiar-general" class="btn-principal">

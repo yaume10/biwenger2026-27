@@ -1,3 +1,7 @@
+// ==========================================
+// PANEL PRINCIPAL
+// ==========================================
+
 // 1. ATRAPAMOS LOS ELEMENTOS DEL HTML
 const botonesJugadores = document.querySelectorAll('.btn-jugador');
 const seccionLogin = document.getElementById('login_jugador');
@@ -7,20 +11,134 @@ const btnContinuar = document.getElementById('btn-continuar'); // <-- ¡Nuevo! A
 
 const paginaPrincipal = document.getElementById('pagina_principal'); // <-- ¡Nuevo! Atrapamos la página principal
 
+// Variable para recordar qué jugador ha iniciado sesión
+let jugadorActual = "";
 
-// 2. LÓGICA: De Login a Popup
+// SIMULACIÓN DE BASE DE DATOS (Deudas pendientes actuales de la liga)
+const deudasPendientesFalsas = [
+    { nombre: "Victor Hugo", jornada: 1, total: 3.00 },
+    { nombre: "Victor Hugo", jornada: 3, total: 2.00 },
+    { nombre: "Alejo", jornada: 2, total: 15.50 },
+    { nombre: "Xavi", jornada: 4, total: 5.00 }
+    // Nota: Beltran, por ejemplo, no está aquí, así que al entrar le saldrá que debe 0€
+];
+
+
+// 2. LÓGICA: De Login a Popup con Mensajes Aleatorios
+// ==========================================
+
+// Diccionario de mensajes personalizados por jugador
+const mensajesBienvenida = {
+    "Alejo": [
+        "¡Hombre Alejo! A ver cuánto debes hoy...",
+        "Bienvenido Alejo. Prepara la cartera, que la comida no se paga sola.",
+        "Alejo, Alejo... ¿Ya has hecho el Bizum o vienes a mirar?"
+    ],
+    "Victor Hugo": [
+        "¡Victor Hugo! El terror de las finanzas ha llegado.",
+        "Bienvenido Victor Hugo. ¿Traes billetes grandes o sueltos?",
+        "Menos mal que estás aquí Victor Hugo, el tesorero preguntaba por ti."
+    ],
+    "Xavi": [
+        "Hombre Xavi, nuestro farolillo favorito...",
+        "Bienvenido Xavi. ¿Hoy sumamos o restamos?",
+        "Pasa Xavi, pasa. El muro de las lamentaciones está al fondo a la derecha."
+    ]
+    // ¡AQUÍ PUEDES AÑADIR A TODOS LOS DEMÁS JUGADORES!
+
+};
+
+// Lista salvavidas por si un jugador no tiene mensajes configurados
+const mensajesPorDefecto = [
+    "¡Hola! Prepárate para ver cómo van las cuentas...",
+    "¡Bienvenido! Echa un vistazo a cómo va la ruina de esta temporada.",
+    "¡Adelante! Las cuentas están claras (más o menos)."
+];
+
+// Función para elegir un elemento al azar de una lista
+function obtenerMensajeAleatorio(listaMensajes) {
+    const indiceAleatorio = Math.floor(Math.random() * listaMensajes.length);
+    return listaMensajes[indiceAleatorio];
+}
+
 botonesJugadores.forEach(boton => {
-    boton.addEventListener('click', () => {
-        // Ocultamos login y mostramos popup
+    boton.addEventListener('click', (evento) => {
+        // 1. Atrapamos el nombre que pone en el botón que han pulsado
+        const nombreJugador = evento.target.textContent.trim();
+
+        // Lo guardamos en la memoria global para usarlo en el resto de la web
+        jugadorActual = nombreJugador;
+
+        // 2. Buscamos su lista de mensajes (si no tiene, cogemos la lista por defecto)
+        let listaDelJugador = mensajesBienvenida[nombreJugador];
+        if (!listaDelJugador) {
+            listaDelJugador = mensajesPorDefecto;
+        }
+
+        // 3. Elegimos un mensaje al azar y le ponemos un saludo inicial
+        const textoAleatorio = obtenerMensajeAleatorio(listaDelJugador);
+
+        // 4. Lo inyectamos en el HTML (buscamos el ID que tienes en tu popup)
+        const parrafoBienvenida = document.getElementById('texto-mensaje-bienvenida');
+        parrafoBienvenida.textContent = textoAleatorio;
+
+        // 5. Por último, lo de siempre: ocultamos login y mostramos popup
         seccionLogin.classList.add('oculto');
         popupBienvenida.classList.remove('oculto');
     });
 });
 
+
+// 2.5 LÓGICA TARJETA DEUDAS (Suma, mensaje, color)
+function actualizarTarjetaDeudas() {
+    const textoDeudas = document.getElementById('texto-tus-deudas');
+    if (!textoDeudas) return;
+
+    // 1. Buscamos solo las deudas del jugador que ha iniciado sesión
+    const misDeudas = deudasPendientesFalsas.filter(deuda => deuda.nombre === jugadorActual);
+
+    // 2. Comprobamos si tiene deudas
+    if (misDeudas.length === 0) {
+        // ESTÁ AL DÍA
+        textoDeudas.innerHTML = "¡Estás al día! No debes nada.";
+        textoDeudas.style.color = ""; // Quitamos cualquier rojo residual
+    } else {
+        // TIENE DEUDAS
+        let sumaTotal = 0;
+
+        // Empezamos a crear una lista HTML para el desglose
+        let listaDesgloseHTML = `<ul style="list-style-type: none; padding-left: 0; margin-top: 10px; color: #333333; font-size: 0.9em;">`;
+
+        misDeudas.forEach(deuda => {
+            sumaTotal += deuda.total;
+            // Añadimos cada jornada como un elemento de lista (<li>)
+            listaDesgloseHTML += `<li style="margin-bottom: 5px; padding-left: 10px; border-left: 3px solid #db2028;">
+                Jornada ${deuda.jornada}: <strong>${deuda.total.toFixed(2)}€</strong>
+            </li>`;
+        });
+
+        listaDesgloseHTML += `</ul>`; // Cerramos la lista
+
+        // Inyectamos el total resaltado en rojo y, justo debajo, la lista de desglose
+        textoDeudas.innerHTML = `
+            <div style="color: #db2028; font-weight: bold; font-size: 1.0em; margin-bottom: 10px;">
+                Debes un total de ${sumaTotal.toFixed(2)} €
+            </div>
+            ${listaDesgloseHTML}
+        `;
+
+        // Vaciamos el color global porque ahora lo controlamos etiqueta por etiqueta en el HTML de arriba
+        textoDeudas.style.color = "";
+    }
+}
+
 // 3. LÓGICA: De Popup a Página Principal (¡Nuevo!)
 btnContinuar.addEventListener('click', () => {
     // Cuando pulsen "OK", ocultamos el popup
     popupBienvenida.classList.add('oculto');
+
+    // ¡NUEVO! Calculamos y escribimos las deudas antes de abrir el telón
+    actualizarTarjetaDeudas();
 
     // Y mostramos por fin la página principal con las tarjetas
     paginaPrincipal.classList.remove('oculto');

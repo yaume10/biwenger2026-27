@@ -14,6 +14,13 @@ const paginaPrincipal = document.getElementById('pagina_principal'); // <-- ¡Nu
 // Variable para recordar qué jugador ha iniciado sesión
 let jugadorActual = "";
 
+// SIMULACIÓN DE BASE DE DATOS: Lista de todos los jugadores de la liga para Login
+const jugadoresBBDD = [
+    "Alejo", "Victor Hugo", "Lavado", "Jaume", "Dani Haro",
+    "Beltran", "Ivan", "Herrero", "Bujardon", "Victor Ruiz",
+    "Padilla", "Dani Rodriguez", "Gabri", "Xavi"
+];
+
 // SIMULACIÓN DE BASE DE DATOS (Deudas pendientes actuales de la liga)
 const deudasPendientesFalsas = [
     { nombre: "Victor Hugo", jornada: 1, total: 3.00 },
@@ -23,73 +30,98 @@ const deudasPendientesFalsas = [
     // Nota: Beltran, por ejemplo, no está aquí, así que al entrar le saldrá que debe 0€
 ];
 
-
-// 2. LÓGICA: De Login a Popup con Mensajes Aleatorios
-// ==========================================
-
-// Diccionario de mensajes personalizados por jugador
-const mensajesBienvenida = {
-    "Alejo": [
-        "¡Hombre Alejo! A ver cuánto debes hoy...",
-        "Bienvenido Alejo. Prepara la cartera, que la comida no se paga sola.",
-        "Alejo, Alejo... ¿Ya has hecho el Bizum o vienes a mirar?"
-    ],
-    "Victor Hugo": [
-        "¡Victor Hugo! El terror de las finanzas ha llegado.",
-        "Bienvenido Victor Hugo. ¿Traes billetes grandes o sueltos?",
-        "Menos mal que estás aquí Victor Hugo, el tesorero preguntaba por ti."
-    ],
-    "Xavi": [
-        "Hombre Xavi, nuestro farolillo favorito...",
-        "Bienvenido Xavi. ¿Hoy sumamos o restamos?",
-        "Pasa Xavi, pasa. El muro de las lamentaciones está al fondo a la derecha."
-    ]
-    // ¡AQUÍ PUEDES AÑADIR A TODOS LOS DEMÁS JUGADORES!
-
-};
-
-// Lista salvavidas por si un jugador no tiene mensajes configurados
-const mensajesPorDefecto = [
-    "¡Hola! Prepárate para ver cómo van las cuentas...",
-    "¡Bienvenido! Echa un vistazo a cómo va la ruina de esta temporada.",
-    "¡Adelante! Las cuentas están claras (más o menos)."
+// SIMULACIÓN BBDD: Deudas históricas totales (para calcular el Farolillo)
+const todasLasDeudasFalsas = [
+    { nombre: "Victor Hugo", total: 5.00 },
+    { nombre: "Alejo", total: 15.50 },
+    { nombre: "Xavi", total: 24.00 }, // <-- Xavi será nuestro farolillo de prueba
+    { nombre: "Jaume", total: 4.00 }
 ];
 
-// Función para elegir un elemento al azar de una lista
+// SIMULACIÓN BBDD: Nombres de los archivos de las fotos
+const fotosJugadores = {
+    "Victor Hugo": "foto_victor.jpeg",
+    "Alejo": "foto_alejo.jpeg",
+    "Xavi": "foto_prueba.jpeg", // Usamos la que ya tienes en tu carpeta para que funcione hoy
+    "Jaume": "foto_jaume.jpeg"
+};
+
+// SIMULACIÓN BBDD: Tabla de mensajes humillantes
+const mensajesHumillantesBBDD = [
+    "Oye {NOMBRE}, ¿el Bizum te da alergia o qué pasa?",
+    "Última hora: {NOMBRE} declara la bancarrota oficial. Se aceptan donativos.",
+    "Si la morosidad fuera un deporte olímpico, {NOMBRE} sería medalla de oro.",
+    "Madre mía {NOMBRE}... debes más dinero que el propio F.C. Barcelona.",
+    "A {NOMBRE} no le llegan los mensajes de cobro, los desvía al buzón de voz."
+];
+
+// Variable global para recordar quién es el farolillo y usar su nombre en el popup
+let nombreFarolilloActual = "";
+
+
+// 2. LÓGICA: Generar Login y Mostrar Popup mensaje aleatorio
+// ==========================================
+
+const cuadriculaJugadores = document.getElementById('cuadricula-jugadores');
+
+// Diccionario de mensajes personalizados (como lo teníamos)
+const mensajesBienvenida = {
+    "Alejo": ["¡Hombre Alejo! A ver cuánto debes hoy...", "Alejo, Alejo... ¿Ya has hecho el Bizum o vienes a mirar?"],
+    "Victor Hugo": ["¡Victor Hugo! El terror de las finanzas ha llegado.", "¿Traes billetes grandes o sueltos?"],
+    "Xavi": ["Hombre Xavi, nuestro farolillo favorito...", "Pasa Xavi, pasa. El muro de las lamentaciones está al fondo."]
+};
+
+const mensajesPorDefecto = [
+    "¡Hola! Prepárate para ver cómo van las cuentas...",
+    "¡Bienvenido! Echa un vistazo a la ruina de esta temporada."
+];
+
 function obtenerMensajeAleatorio(listaMensajes) {
     const indiceAleatorio = Math.floor(Math.random() * listaMensajes.length);
     return listaMensajes[indiceAleatorio];
 }
 
-botonesJugadores.forEach(boton => {
-    boton.addEventListener('click', (evento) => {
-        // 1. Atrapamos el nombre que pone en el botón que han pulsado
-        const nombreJugador = evento.target.textContent.trim();
+// CONSTRUCTOR AUTOMÁTICO DE BOTONES
+function generarBotonesLogin() {
+    // Si no existe el contenedor, no hacemos nada
+    if (!cuadriculaJugadores) return;
 
-        // Lo guardamos en la memoria global para usarlo en el resto de la web
-        jugadorActual = nombreJugador;
+    // Vaciamos por si acaso
+    cuadriculaJugadores.innerHTML = '';
 
-        // 2. Buscamos su lista de mensajes (si no tiene, cogemos la lista por defecto)
-        let listaDelJugador = mensajesBienvenida[nombreJugador];
-        if (!listaDelJugador) {
-            listaDelJugador = mensajesPorDefecto;
-        }
+    // Por cada jugador en nuestra "Base de Datos"...
+    jugadoresBBDD.forEach(nombre => {
+        // 1. Creamos el botón
+        const btn = document.createElement('button');
+        btn.className = 'btn-jugador'; // La clase que tienes en tu CSS
+        btn.textContent = nombre;
 
-        // 3. Elegimos un mensaje al azar y le ponemos un saludo inicial
-        const textoAleatorio = obtenerMensajeAleatorio(listaDelJugador);
+        // 2. Le ponemos la "oreja" para cuando hagan clic
+        btn.addEventListener('click', () => {
 
-        // 4. Lo inyectamos en el HTML (buscamos el ID que tienes en tu popup)
-        const parrafoBienvenida = document.getElementById('texto-mensaje-bienvenida');
-        parrafoBienvenida.textContent = textoAleatorio;
+            // Guardamos quién es globalmente
+            jugadorActual = nombre;
 
-        // 5. Por último, lo de siempre: ocultamos login y mostramos popup
-        seccionLogin.classList.add('oculto');
-        popupBienvenida.classList.remove('oculto');
+            // Buscamos su mensaje y lo pintamos
+            let listaDelJugador = mensajesBienvenida[nombre] || mensajesPorDefecto;
+            const textoAleatorio = obtenerMensajeAleatorio(listaDelJugador);
+            document.getElementById('texto-mensaje-bienvenida').textContent = textoAleatorio;
+
+            // Ocultamos login y mostramos popup
+            document.getElementById('login_jugador').classList.add('oculto');
+            document.getElementById('popup_bienvenida').classList.remove('oculto');
+        });
+
+        // 3. Metemos el botón ya configurado dentro de la cuadrícula
+        cuadriculaJugadores.appendChild(btn);
     });
-});
+}
+
+// Al cargar el archivo JavaScript, ejecutamos la función para que pinte los botones
+generarBotonesLogin();
 
 
-// 2.5 LÓGICA TARJETA DEUDAS (Suma, mensaje, color)
+// 2.1 LÓGICA TARJETA DEUDAS (Suma, mensaje, color)
 function actualizarTarjetaDeudas() {
     const textoDeudas = document.getElementById('texto-tus-deudas');
     if (!textoDeudas) return;
@@ -132,6 +164,48 @@ function actualizarTarjetaDeudas() {
     }
 }
 
+// ==========================================
+// 2.2 LÓGICA: Tarjeta del Farolillo Rojo
+// ==========================================
+function actualizarFarolillo() {
+    // 1. Sumamos la deuda acumulada de cada jugador (por si hubiera varias filas del mismo)
+    const totales = {};
+    todasLasDeudasFalsas.forEach(deuda => {
+        if (!totales[deuda.nombre]) {
+            totales[deuda.nombre] = 0;
+        }
+        totales[deuda.nombre] += deuda.total;
+    });
+
+    // 2. Buscamos quién tiene el número más alto
+    let maxDeuda = -1;
+    nombreFarolilloActual = ""; // Limpiamos por si acaso
+
+    for (const [nombre, total] of Object.entries(totales)) {
+        if (total > maxDeuda) {
+            maxDeuda = total;
+            nombreFarolilloActual = nombre;
+        }
+    }
+
+    // 3. Inyectamos el texto con el nuevo formato HTML
+    const textoFarolillo = document.getElementById('texto-el-ultimo');
+    if (textoFarolillo && nombreFarolilloActual !== "") {
+        textoFarolillo.innerHTML = `
+            Como pedazo de farolo tenemos a: <strong>${nombreFarolilloActual.toUpperCase()}</strong> con un total pagado de <strong>${maxDeuda.toFixed(2)}€</strong>.
+            <br><br>
+            ¡No pierdas la oportunidad de reirte de él y envíale un mensaje ahora mismo!
+        `;
+    }
+
+    // 4. Cambiamos la foto (buscamos la imagen por su clase)
+    const imagenFarolillo = document.querySelector('.foto-farolillo');
+    if (imagenFarolillo && nombreFarolilloActual !== "") {
+        // Si no encuentra foto en nuestro diccionario, ponemos una de fallback
+        imagenFarolillo.src = fotosJugadores[nombreFarolilloActual] || "foto_prueba.jpeg";
+    }
+}
+
 // 3. LÓGICA: De Popup a Página Principal (¡Nuevo!)
 btnContinuar.addEventListener('click', () => {
     // Cuando pulsen "OK", ocultamos el popup
@@ -139,6 +213,8 @@ btnContinuar.addEventListener('click', () => {
 
     // ¡NUEVO! Calculamos y escribimos las deudas antes de abrir el telón
     actualizarTarjetaDeudas();
+
+    actualizarFarolillo();
 
     // Y mostramos por fin la página principal con las tarjetas
     paginaPrincipal.classList.remove('oculto');
@@ -163,8 +239,18 @@ const btnGenerarUltimo = document.getElementById('btn-generar-ultimo');
 const popupUltimo = document.getElementById('popup-ultimo');
 const btnCerrarPopupUltimo = document.getElementById('btn-cerrar-popup-ultimo');
 
-// Cuando pulsamos el botón rojo de la tarjeta, mostramos el popup
+
+// Cuando pulsamos el botón rojo de la tarjeta, mostramos el popup con frase aleatoria
 btnGenerarUltimo.addEventListener('click', () => {
+    // 1. Elegimos una frase al azar de la BBDD
+    const indice = Math.floor(Math.random() * mensajesHumillantesBBDD.length);
+    let fraseElegida = mensajesHumillantesBBDD[indice];
+
+    // 2. Sustituimos el comodín {NOMBRE} por el nombre real del farolillo
+    fraseElegida = fraseElegida.replace("{NOMBRE}", nombreFarolilloActual);
+
+    // 3. Lo metemos en el popup y lo mostramos
+    document.getElementById('texto-popup-ultimo').textContent = fraseElegida;
     popupUltimo.classList.remove('oculto');
 });
 

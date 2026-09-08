@@ -727,3 +727,80 @@ function actualizarMensajeGeneral() {
     // 6. Inyectamos el texto en su caja correspondiente
     textareaGeneral.value = mensaje;
 }
+
+// ==========================================
+// LÓGICA: IMPORTAR CSV EN TESORERO
+// ==========================================
+
+const inputCsv = document.getElementById('input-csv');
+
+if (inputCsv) {
+    inputCsv.addEventListener('change', (evento) => {
+        const archivo = evento.target.files[0];
+        if (!archivo) return;
+
+        const lector = new FileReader();
+
+        lector.onload = (e) => {
+            const contenido = e.target.result;
+            const lineas = contenido.split('\n');
+
+            let deudasTemporales = [];
+            let huboError = false;
+
+            for (let i = 1; i < lineas.length; i++) {
+                const linea = lineas[i].trim();
+                if (!linea) continue;
+
+                const columnas = linea.split(';');
+                if (columnas.length < 4) continue;
+
+                const nombre = columnas[0].trim();
+
+                // ==== VALIDACIÓN DE NOMBRE ====
+                // IMPORTANTE: Asegúrate de que la variable "jugadoresBBDD" 
+                // esté declarada arriba del todo en tu archivo JS.
+                if (!jugadoresBBDD.includes(nombre)) {
+                    alert(`❌ ERROR: El jugador "${nombre}" no existe en la base de datos (Fila ${i + 1}). Revisa las mayúsculas, tildes o espacios en el CSV. Importación cancelada.`);
+                    huboError = true;
+                    break;
+                }
+
+                const jornada = parseInt(columnas[1].trim());
+
+                // ==== LECTURA DE EUROS ====
+                const eurosPos = parseFloat(columnas[2].trim()) || 0;
+                const eurosRoj = parseFloat(columnas[3].trim()) || 0;
+                const total = eurosPos + eurosRoj;
+
+                // Lo metemos en la mochila temporal
+                deudasTemporales.push({
+                    nombre: nombre,
+                    jornada: jornada,
+                    eurosPosicion: eurosPos,
+                    eurosRojas: eurosRoj,
+                    total: total
+                });
+            }
+
+            // Si el bucle terminó sin errores, guardamos de verdad
+            if (!huboError) {
+
+                // Volcamos todas las deudas del Excel a la mochila real del tesorero
+                mochilaDeudas.push(...deudasTemporales);
+
+                // ¡AQUÍ ESTÁ LA MAGIA! Llamamos a tus propias funciones para que se repinte todo
+                actualizarPantallaSaldar();
+                actualizarMensajeWhatsApp();
+                actualizarMensajeGeneral();
+
+                alert(`¡Éxito! ✅ Se han añadido ${deudasTemporales.length} deudas nuevas desde el CSV.`);
+            }
+
+            // Vaciamos el input siempre
+            inputCsv.value = "";
+        };
+
+        lector.readAsText(archivo);
+    });
+}

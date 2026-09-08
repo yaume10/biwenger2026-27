@@ -933,6 +933,66 @@ input[type="number"] {
     -moz-appearance: textfield;
 }
 
+/* Importar y descargar CSV */
+
+/* 1. Ocultar el input feo que trae el navegador por defecto */
+.input-oculto {
+    display: none;
+}
+
+/* 2. Contenedor principal para centrar el botón de subir */
+.contenedor-csv {
+    text-align: center;
+    margin: 10px 0;
+}
+
+/* 3. Estilo del botón principal de "Importar jornada" */
+.btn-csv {
+    background-color: #b1b4b1;
+    /* Un verde oscuro estilo Excel */
+    color: white;
+    padding: 12px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 60px;
+    display: inline-block;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-csv:hover {
+    background-color: #666866;
+    /* Verde más oscuro al pasar el ratón */
+}
+
+/* 4. Contenedor para centrar el enlace de la plantilla */
+.contenedor-enlace-plantilla {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+/* 5. Estilo secundario para el botón de "Descargar plantilla" */
+.btn-descargar-plantilla {
+    background-color: #f5f5f5;
+    /* Fondo gris muy clarito */
+    color: #555555;
+    /* Texto gris oscuro */
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    /* Quitamos el subrayado típico de los enlaces */
+    font-size: 0.9em;
+    display: inline-block;
+    border: 1px solid #dddddd;
+    transition: all 0.3s ease;
+}
+
+.btn-descargar-plantilla:hover {
+    background-color: #e0e0e0;
+    color: #111111;
+}
+
 
 /* Sección Mensaje */
 .btn-copiado {

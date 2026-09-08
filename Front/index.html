@@ -41,7 +41,7 @@
     <!-- FIN Pop up Bienvenida -->
 
     <!-- INICIO Pagina principal -->
-    <section id="pagina_principal" class="ocultooooo">
+    <section id="pagina_principal" class="oculto">
 
         <header class="cabecera-app">
             <h1>Biwenger 2026-27</h1>
@@ -182,7 +182,7 @@
 
 
     <!-- INICIO Panel Tesorero -->
-    <section id="panel_tesorero" class="oculto">
+    <section id="panel_tesorero" class="ocultoooo">
 
         <div class="cabecera-app">
             <h1>Panel del Tesorero</h1>
@@ -199,7 +199,7 @@
         <!-- ==================== -->
         <!-- PESTAÑA 1: SALDAR (Visible por defecto) -->
         <!-- ==================== -->
-        <div id="contenido-tab-saldar" class="tab-contenido ocultoooooo">
+        <div id="contenido-tab-saldar" class="tab-contenido oculto">
 
             <!-- Tarjeta 1: Deudas Activas -->
             <div class="tarjeta-clasificacion tarjeta-pendientes">
@@ -217,17 +217,16 @@
                 </div>
             </div>
 
+
         </div>
 
 
         <!-- ==================== -->
         <!-- PESTAÑA 2: AÑADIR    -->
         <!-- ==================== -->
-        <div id="contenido-tab-anadir" class="tab-contenido oculto">
+        <div id="contenido-tab-anadir" class="tab-contenido ocultooooo">
             <div class="tarjeta-clasificacion">
                 <h3>Añadir Deudas de la Jornada</h3>
-
-
 
                 <!-- Fila para añadir jugador individual -->
                 <div class="fila-formulario">
@@ -274,6 +273,21 @@
 
                 <button id="btn-guardar-jornada" class="btn-principal">Guardar Jornada Completa</button>
             </div>
+
+            <!-- Botón para subir CSV -->
+            <div class="contenedor-csv">
+                <input type="file" id="input-csv" accept=".csv" class="input-oculto">
+                <label for="input-csv" class="btn-csv">
+                    📁 Importar jornada desde CSV
+                </label>
+            </div>
+
+            <div class="contenedor-enlace-plantilla">
+                <a href="plantilla_deudas.csv" download="plantilla_deudas.csv" class="btn-descargar-plantilla">
+                    ⬇️ Descargar plantilla CSV
+                </a>
+            </div>
+
         </div>
 
 

@@ -485,8 +485,8 @@ td:nth-child(2) {
     color: #1a1a1a;
 }
 
-/* Columna 5: Total Pagado */
-td:nth-child(5) {
+/* Columna 3: Total Pagado */
+td:nth-child(3) {
     font-weight: 600;
     font-size: 13px;
     /* El dato más grande de toda la fila */

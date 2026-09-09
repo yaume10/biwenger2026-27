@@ -18,7 +18,7 @@ let jugadorActual = "";
 const jugadoresBBDD = [
     "Alejo", "Victor Hugo", "Lavado", "Jaume", "Dani Haro",
     "Beltran", "Ivan", "Herrero", "Bujardon", "Victor Ruiz",
-    "Padilla", "Dani Rodriguez", "Gabri", "Xavi"
+    "Padilla", "Dani Trenes", "Gabri", "Xavi"
 ];
 
 // SIMULACIÓN DE BASE DE DATOS (Deudas pendientes actuales de la liga)
@@ -297,9 +297,9 @@ function actualizarClasificacionGeneral() {
         fila.innerHTML = `
             <td>${index + 1}</td>
             <td><strong>${jugador.nombre}</strong></td>
+            <td><strong>${jugador.total.toFixed(2)} €</strong></td>
             <td>${jugador.eurosPosicion.toFixed(2)} €</td>
             <td>${jugador.eurosRojas.toFixed(2)} €</td>
-            <td><strong>${jugador.total.toFixed(2)} €</strong></td>
             <td class="texto-gris">${proyeccion.toFixed(2)} €</td>
         `;
         cuerpoTabla.appendChild(fila);

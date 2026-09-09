@@ -505,7 +505,7 @@ tbody tr:nth-child(3) td {
     /* Fondo verde muy suave */
     color: #166534;
     /* Texto verde oscuro */
-    font-weight: 700;
+    font-weight: ;
 }
 
 tbody tr:nth-child(1) td {
@@ -521,7 +521,7 @@ tbody tr:nth-last-child(3) td {
     /* Fondo rojo muy suave */
     color: #db2028;
     /* Texto rojo Biwenger */
-    font-weight: 700;
+    font-weight: ;
 }
 
 /* El Farolillo Rojo absoluto (El último de todos): Más intenso */
@@ -535,7 +535,106 @@ tbody tr {
     border-bottom: 1px solid #e2e8f0;
 }
 
+/*  COLUMNA JUGADOR CONGELADA (STICKY)  */
 
+/* 1. Unificar padding y altura de línea para garantizar alineación física */
+table th,
+table td {
+    padding: 12px 10px;
+    /* Asegurar que es uniforme en toda la tabla */
+    line-height: 1.4;
+    /* Ayuda a la alineación vertical */
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: middle;
+    /* Asegurar alineación vertical central */
+}
+
+/* 2. Fijar la cabecera y las celdas de la columna 2 (Jugador) */
+th:nth-child(2),
+td:nth-child(2) {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+
+}
+
+/* 3. Colores de fondo para la cabecera */
+th {
+    background-color: #1a1a1a;
+    color: #ffffff;
+}
+
+th:nth-child(2) {
+    background-color: #1a1a1a;
+    /* La cabecera sticky también debe ser negra y opaca */
+}
+
+/* 4. Colores de fondo para las filas y su réplica en la columna sticky */
+
+/* Fondo blanco por defecto para filas impares */
+tbody tr {
+    background-color: #ffffff;
+}
+
+tbody tr td:nth-child(2) {
+    background-color: #ffffff;
+    /* Mismo fondo blanco para la columna sticky en filas impares */
+}
+
+/* Efecto cebra gris para filas pares */
+tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+tbody tr:nth-child(even) td:nth-child(2) {
+    background-color: #f8f9fa;
+    /* Mismo fondo gris para la columna sticky en filas pares */
+}
+
+
+/* Los 3 primeros (Verde suave) */
+tbody tr:nth-child(1),
+tbody tr:nth-child(2),
+tbody tr:nth-child(3) {
+    background-color: #f0fdf4;
+}
+
+tbody tr:nth-child(1) td:nth-child(2),
+tbody tr:nth-child(2) td:nth-child(2),
+tbody tr:nth-child(3) td:nth-child(2) {
+    background-color: #f0fdf4;
+}
+
+/* El 1º más intenso */
+tbody tr:nth-child(1) {
+    background-color: #d7fce1;
+}
+
+tbody tr:nth-child(1) td:nth-child(2) {
+    background-color: #d7fce1;
+}
+
+/* Los 3 últimos (Rojo suave) */
+tbody tr:nth-last-child(1),
+tbody tr:nth-last-child(2),
+tbody tr:nth-last-child(3) {
+    background-color: #fff5f5;
+}
+
+tbody tr:nth-last-child(1) td:nth-child(2),
+tbody tr:nth-last-child(2) td:nth-child(2),
+tbody tr:nth-last-child(3) td:nth-child(2) {
+    background-color: #fff5f5;
+}
+
+/* El Farolillo Rojo más intenso */
+tbody tr:nth-last-child(1) {
+    background-color: #fee2e2;
+}
+
+tbody tr:nth-last-child(1) td:nth-child(2) {
+    background-color: #fee2e2;
+}
 
 /* FIN Página principal */
 

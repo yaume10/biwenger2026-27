@@ -398,38 +398,7 @@ section {
     text-transform: uppercase;
 }
 
-/* --- Resumen Global  --- */
-.resumen-global {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-bottom: 24px;
-}
 
-.metrica {
-    background: #f8f9fa;
-    /* Gris muy sutil */
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 12px 4px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-}
-
-.metrica .etiqueta {
-    font-size: 9px;
-    color: #666666;
-    font-weight: 700;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-}
-
-.metrica .valor {
-    font-size: 14px;
-    font-weight: 800;
-    color: #db2028;
-}
 
 /* --- Resumen Global (3 bloques superiores) --- */
 .resumen-global {
@@ -505,9 +474,22 @@ td:nth-child(2) {
     text-align: left;
 }
 
+/* --- Destacar Nombre y Total Pagado --- */
+
+/* Columna 2: Nombre del Jugador */
 td:nth-child(2) {
-    font-weight: 700;
+    font-weight: 600;
+    /* Un poco más gordita la letra */
+    font-size: 13px;
+    /* Más grande que el 12px normal de la tabla */
     color: #1a1a1a;
+}
+
+/* Columna 5: Total Pagado */
+td:nth-child(5) {
+    font-weight: 600;
+    font-size: 13px;
+    /* El dato más grande de toda la fila */
 }
 
 /* Efecto cebra para las demás filas (ayuda a leer las líneas largas) */
@@ -524,6 +506,10 @@ tbody tr:nth-child(3) td {
     color: #166534;
     /* Texto verde oscuro */
     font-weight: 700;
+}
+
+tbody tr:nth-child(1) td {
+    background-color: #d7fce1;
 }
 
 /* Los 3 últimos (El pozo, los que más pagan): Rojo Biwenger */
@@ -548,6 +534,7 @@ tbody tr:nth-last-child(1) td {
 tbody tr {
     border-bottom: 1px solid #e2e8f0;
 }
+
 
 
 /* FIN Página principal */

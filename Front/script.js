@@ -30,12 +30,13 @@ const deudasPendientesFalsas = [
     // Nota: Beltran, por ejemplo, no está aquí, así que al entrar le saldrá que debe 0€
 ];
 
-// SIMULACIÓN BBDD: Deudas históricas totales (para calcular el Farolillo)
+// SIMULACIÓN BBDD: Deudas históricas totales (¡Ahora con desglose!)
 const todasLasDeudasFalsas = [
-    { nombre: "Victor Hugo", total: 5.00 },
-    { nombre: "Alejo", total: 15.50 },
-    { nombre: "Xavi", total: 24.00 }, // <-- Xavi será nuestro farolillo de prueba
-    { nombre: "Jaume", total: 4.00 }
+    { nombre: "Victor Hugo", jornada: 1, eurosPosicion: 3.00, eurosRojas: 2.00, total: 5.00 },
+    { nombre: "Alejo", jornada: 1, eurosPosicion: 15.50, eurosRojas: 0.00, total: 15.50 },
+    { nombre: "Xavi", jornada: 2, eurosPosicion: 14.00, eurosRojas: 10.00, total: 24.00 },
+    { nombre: "Jaume", jornada: 3, eurosPosicion: 4.00, eurosRojas: 0.00, total: 4.00 },
+    { nombre: "Dani Haro", jornada: 3, eurosPosicion: 0.00, eurosRojas: 2.00, total: 2.00 }
 ];
 
 // SIMULACIÓN BBDD: Nombres de los archivos de las fotos
@@ -206,6 +207,98 @@ function actualizarFarolillo() {
     }
 }
 
+
+// ==========================================
+// 2.3 LÓGICA: Tabla de Clasificación General
+// ==========================================
+function actualizarClasificacionGeneral() {
+    const cuerpoTabla = document.getElementById('cuerpo-tabla-clasificacion');
+    if (!cuerpoTabla) return;
+
+    // ==== MAGIA: CONTAR JORNADAS ÚNICAS ====
+    // 1. Extraemos solo los números de jornada de todas las deudas
+    const listaDeJornadas = todasLasDeudasFalsas.map(deuda => deuda.jornada);
+
+    // 2. Usamos "Set" para eliminar los duplicados (ej: 1,1,1,2,2 -> 1,2)
+    const jornadasUnicas = new Set(listaDeJornadas);
+
+    // 3. Contamos cuántas hay en total
+    const numeroJornadasJugadas = jornadasUnicas.size;
+
+    // Preparamos a todos los jugadores
+    const resumenJugadores = {};
+    jugadoresBBDD.forEach(nombre => {
+        resumenJugadores[nombre] = { nombre: nombre, eurosPosicion: 0, eurosRojas: 0, total: 0 };
+    });
+
+    // Sumamos los datos
+    todasLasDeudasFalsas.forEach(deuda => {
+        if (resumenJugadores[deuda.nombre]) {
+            resumenJugadores[deuda.nombre].eurosPosicion += deuda.eurosPosicion;
+            resumenJugadores[deuda.nombre].eurosRojas += deuda.eurosRojas;
+            resumenJugadores[deuda.nombre].total += deuda.total;
+        }
+    });
+
+    // Ordenamos de menor a mayor
+    const listaClasificacion = Object.values(resumenJugadores);
+    listaClasificacion.sort((a, b) => a.total - b.total);
+
+    // Vaciamos el HTML
+    cuerpoTabla.innerHTML = '';
+
+    let boteTotalGlobal = 0;
+
+    // Pintamos las filas
+    listaClasificacion.forEach((jugador, index) => {
+        boteTotalGlobal += jugador.total;
+
+        // ==== PROYECCIÓN INDIVIDUAL AUTOMÁTICA ====
+        let proyeccion = 0;
+        if (numeroJornadasJugadas > 0) {
+            proyeccion = (jugador.total / numeroJornadasJugadas) * 38;
+        }
+
+        const fila = document.createElement('tr');
+
+        fila.innerHTML = `
+            <td>${index + 1}</td>
+            <td><strong>${jugador.nombre}</strong></td>
+            <td>${jugador.eurosPosicion.toFixed(2)} €</td>
+            <td>${jugador.eurosRojas.toFixed(2)} €</td>
+            <td><strong>${jugador.total.toFixed(2)} €</strong></td>
+            <td class="texto-gris">${proyeccion.toFixed(2)} €</td>
+        `;
+        cuerpoTabla.appendChild(fila);
+    });
+
+    // ==== ACTUALIZAR TARJETAS GLOBALES ====
+    const spanTotal = document.getElementById('total-pagado-global');
+    const spanProyeccion = document.getElementById('proyeccion-global');
+    const spanComida = document.getElementById('comida-persona');
+
+    if (spanTotal) spanTotal.textContent = boteTotalGlobal.toFixed(2) + ' €';
+
+    // 1. Calculamos la proyección global primero (fuera del if para poder reutilizarla)
+    let proyeccionGlobal = 0;
+    if (numeroJornadasJugadas > 0) {
+        proyeccionGlobal = (boteTotalGlobal / numeroJornadasJugadas) * 38;
+    }
+
+    // 2. Pintamos la proyección global
+    if (spanProyeccion) {
+        spanProyeccion.textContent = proyeccionGlobal.toFixed(2) + ' €';
+    }
+
+    // 3. Calculamos el bote para la comida basado en la PROYECCIÓN TOTAL (¡Tu corrección!)
+    if (spanComida) {
+        const precioComidaPersona = proyeccionGlobal / jugadoresBBDD.length;
+        spanComida.textContent = precioComidaPersona.toFixed(2) + ' €';
+    }
+
+}
+
+
 // 3. LÓGICA: De Popup a Página Principal (¡Nuevo!)
 btnContinuar.addEventListener('click', () => {
     // Cuando pulsen "OK", ocultamos el popup
@@ -215,6 +308,8 @@ btnContinuar.addEventListener('click', () => {
     actualizarTarjetaDeudas();
 
     actualizarFarolillo();
+
+    actualizarClasificacionGeneral();
 
     // Y mostramos por fin la página principal con las tarjetas
     paginaPrincipal.classList.remove('oculto');

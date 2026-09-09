@@ -60,6 +60,39 @@ const mensajesHumillantesBBDD = [
 let nombreFarolilloActual = "";
 
 
+// ==========================================
+// FUNCIÓN UNIVERSAL PARA COPIAR EN MÓVILES Y PC
+// ==========================================
+function copiarTextoSeguro(texto, boton, textoExito) {
+    // Truco de la vieja escuela para móviles sin HTTPS
+    const areaFalsa = document.createElement("textarea");
+    areaFalsa.value = texto;
+    // La escondemos fuera de la pantalla
+    areaFalsa.style.position = "fixed";
+    areaFalsa.style.left = "-999999px";
+    document.body.appendChild(areaFalsa);
+
+    areaFalsa.select();
+    areaFalsa.setSelectionRange(0, 99999); // Para móviles
+
+    try {
+        document.execCommand("copy"); // La orden mágica que no pide permisos
+        // Reutilizamos tu función de éxito si existe, si no, lo hacemos a mano
+        if (typeof mostrarExitoBoton === "function") {
+            mostrarExitoBoton(boton, textoExito);
+        } else {
+            const textoOriginal = boton.textContent;
+            boton.textContent = textoExito;
+            setTimeout(() => boton.textContent = textoOriginal, 2000);
+        }
+    } catch (err) {
+        alert("Tu navegador ha bloqueado la copia. Cópialo manualmente.");
+    }
+
+    document.body.removeChild(areaFalsa); // Limpiamos la basura
+}
+
+
 // 2. LÓGICA: Generar Login y Mostrar Popup mensaje aleatorio
 // ==========================================
 
@@ -355,31 +388,16 @@ btnCerrarPopupUltimo.addEventListener('click', () => {
 });
 
 
-// 6. LÓGICA: Botón Copiar al portapapeles
-// Atrapamos el botón y el texto que queremos copiar
-const btnCopiar = document.getElementById('btn-copiar');
+// 6. LÓGICA: Botón Copiar al portapapeles (FAROLILLO ROJO)
+const btnCopiarFarolillo = document.getElementById('btn-copiar');
 const textoBroma = document.getElementById('texto-popup-ultimo');
 
-btnCopiar.addEventListener('click', () => {
-    // 1. Guardamos el texto que hay dentro del párrafo en una variable
-    const textoACopiar = textoBroma.textContent;
-
-    // 2. Le decimos al navegador que lo copie al portapapeles
-    navigator.clipboard.writeText(textoACopiar).then(() => {
-
-        // 3. Feedback visual: Guardamos lo que ponía en el botón ("COPIAR")
-        const textoOriginal = btnCopiar.textContent;
-
-        // Le cambiamos el texto para avisar de que ha funcionado
-        btnCopiar.textContent = '¡Copiado! ✅';
-
-        // 4. Usamos setTimeout para esperar 2 segundos (2000 milisegundos) y devolverlo a la normalidad
-        setTimeout(() => {
-            btnCopiar.textContent = textoOriginal;
-        }, 2000);
-
+if (btnCopiarFarolillo && textoBroma) {
+    btnCopiarFarolillo.addEventListener('click', () => {
+        const textoACopiar = textoBroma.textContent;
+        copiarTextoSeguro(textoACopiar, btnCopiarFarolillo, '¡Copiado! ✅');
     });
-});
+}
 
 
 // ==========================================
@@ -408,6 +426,20 @@ btnAccesoTesorero.addEventListener('click', () => {
 });
 
 
+// ==========================================
+// SALIR DEL PANEL DE TESORERO
+// ==========================================
+// NOTA: Comprueba que el ID sea el mismo que tienes en tu archivo HTML
+const btnVolverTesorero = document.getElementById('btn-volver-tesorero');
+
+if (btnVolverTesorero) {
+    btnVolverTesorero.addEventListener('click', () => {
+        // Escondemos el panel del tesorero
+        vistaTesorero.classList.add('oculto');
+        // Mostramos la vista principal (el login)
+        vistaPrincipal.classList.remove('oculto');
+    });
+}
 
 // ==========================================
 // NAVEGACIÓN: PESTAÑAS DEL TESORERO
@@ -644,22 +676,18 @@ function actualizarMensajeWhatsApp() {
     }
 }
 
-// 5. EVENTOS: BOTONES DE COPIAR PORTAPAPELES
+// 5. EVENTOS: BOTONES DE COPIAR PORTAPAPELES (TESORERO)
 if (btnCopiarWhatsapp) {
     btnCopiarWhatsapp.addEventListener('click', () => {
         const texto = document.getElementById('texto-whatsapp').value;
-        navigator.clipboard.writeText(texto).then(() => {
-            mostrarExitoBoton(btnCopiarWhatsapp, '¡Copiado!');
-        });
+        copiarTextoSeguro(texto, btnCopiarWhatsapp, '¡Copiado!');
     });
 }
 
 if (btnCopiarGeneral) {
     btnCopiarGeneral.addEventListener('click', () => {
         const texto = document.getElementById('texto-whatsapp-general').value;
-        navigator.clipboard.writeText(texto).then(() => {
-            mostrarExitoBoton(btnCopiarGeneral, '¡Copiado!');
-        });
+        copiarTextoSeguro(texto, btnCopiarGeneral, '¡Copiado!');
     });
 }
 

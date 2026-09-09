@@ -554,6 +554,25 @@ tbody tr {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
+#btn-volver-tesorero {
+    background: #ffffff;
+    color: #1a1a1a;
+    border: 2px solid #1a1a1a;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#btn-volver-tesorer:hover,
+#btn-volver-tesorero:active {
+    background: #db2028;
+    color: #ffffff;
+    border-color: #db2028;
+}
+
 .tab-btn {
     flex: 1;
     background: transparent;

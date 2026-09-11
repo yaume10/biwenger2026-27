@@ -41,7 +41,7 @@ const btnContinuar = document.getElementById('btn-continuar'); // <-- ¡Nuevo! A
 const paginaPrincipal = document.getElementById('pagina_principal'); // <-- ¡Nuevo! Atrapamos la página principal
 
 // Variable para recordar qué jugador ha iniciado sesión
-let jugadorActual = "";
+let jugadorActual = null;
 
 // SIMULACIÓN DE BASE DE DATOS: Lista de todos los jugadores de la liga para Login
 const jugadoresBBDD = [
@@ -122,7 +122,7 @@ function copiarTextoSeguro(texto, boton, textoExito) {
 }
 
 
-// 2. LÓGICA: Generar Login y Mostrar Popup mensaje aleatorio
+// LÓGICA: Generar Login y Mostrar Popup mensaje aleatorio
 // ==========================================
 
 const cuadriculaJugadores = document.getElementById('cuadricula-jugadores');
@@ -144,165 +144,232 @@ function obtenerMensajeAleatorio(listaMensajes) {
     return listaMensajes[indiceAleatorio];
 }
 
+// 1.1 CONSTRUCTOR AUTOMÁTICO DE BOTONES (SUPABASE)
 // CONSTRUCTOR AUTOMÁTICO DE BOTONES
-function generarBotonesLogin() {
-    // Si no existe el contenedor, no hacemos nada
+async function generarBotonesLogin() {
     if (!cuadriculaJugadores) return;
 
-    // Vaciamos por si acaso
+    // Vaciamos por si acaso hay algo escrito en el HTML
     cuadriculaJugadores.innerHTML = '';
 
-    // Por cada jugador en nuestra "Base de Datos"...
-    jugadoresBBDD.forEach(nombre => {
-        // 1. Creamos el botón
+    // 1. Pedimos los jugadores reales a Supabase
+    const { data: jugadoresReales, error } = await db
+        .from('jugadores')
+        .select('*')
+        .order('id', { ascending: true });
+
+    if (error) {
+        console.error("Error al cargar jugadores:", error.message);
+        return;
+    }
+
+    // 2. Por cada jugador que nos devuelve Supabase...
+    jugadoresReales.forEach(jugadorBBDD => {
         const btn = document.createElement('button');
-        btn.className = 'btn-jugador'; // La clase que tienes en tu CSS
-        btn.textContent = nombre;
+        btn.className = 'btn-jugador';
+        btn.textContent = jugadorBBDD.nombre;
 
-        // 2. Le ponemos la "oreja" para cuando hagan clic
-        btn.addEventListener('click', () => {
+        // Le ponemos la "oreja" para cuando hagan clic (¡Ahora es async!)
+        btn.addEventListener('click', async () => {
+            // Guardamos el objeto entero del jugador para usarlo en el resto de la web
+            jugadorActual = jugadorBBDD;
 
-            // Guardamos quién es globalmente
-            jugadorActual = nombre;
+            // --- MAGIA: PEDIR MENSAJE PERSONALIZADO A SUPABASE ---
+            // Le pedimos a la BBDD solo los mensajes donde el id_jugador coincida con este jugador
+            const { data: mensajesJugador, errorMensajes } = await db
+                .from('mensajes_bienvenida')
+                .select('mensaje')
+                .eq('id_jugador', jugadorBBDD.id);
 
-            // Buscamos su mensaje y lo pintamos
-            let listaDelJugador = mensajesBienvenida[nombre] || mensajesPorDefecto;
-            const textoAleatorio = obtenerMensajeAleatorio(listaDelJugador);
-            document.getElementById('texto-mensaje-bienvenida').textContent = textoAleatorio;
+            // Si hay un error o por algún casual nos quedamos sin mensajes, ponemos uno por defecto
+            if (errorMensajes || !mensajesJugador || mensajesJugador.length === 0) {
+                document.getElementById('texto-mensaje-bienvenida').textContent = "¡Bienvenido a la ruina de esta temporada!";
+            } else {
+                // Si todo va bien, elegimos uno al azar de la lista que nos devuelve (tendrá 3)
+                const indiceAleatorio = Math.floor(Math.random() * mensajesJugador.length);
+                document.getElementById('texto-mensaje-bienvenida').textContent = mensajesJugador[indiceAleatorio].mensaje;
+            }
 
             // Ocultamos login y mostramos popup
             document.getElementById('login_jugador').classList.add('oculto');
             document.getElementById('popup_bienvenida').classList.remove('oculto');
         });
 
-        // 3. Metemos el botón ya configurado dentro de la cuadrícula
+        // Metemos el botón en la cuadrícula
         cuadriculaJugadores.appendChild(btn);
     });
 }
 
-// Al cargar el archivo JavaScript, ejecutamos la función para que pinte los botones
+// Ejecutamos la función al cargar la página
 generarBotonesLogin();
 
 
-// 2.1 LÓGICA TARJETA DEUDAS (Suma, mensaje, color)
-function actualizarTarjetaDeudas() {
+
+// 2.1 LÓGICA TARJETA DEUDAS (Ahora conectada a Supabase)
+async function actualizarTarjetaDeudas() {
     const textoDeudas = document.getElementById('texto-tus-deudas');
     if (!textoDeudas) return;
 
-    // 1. Buscamos solo las deudas del jugador que ha iniciado sesión
-    const misDeudas = deudasPendientesFalsas.filter(deuda => deuda.nombre === jugadorActual);
+    // Mensajito rápido mientras carga
+    textoDeudas.innerHTML = "";
+
+    // 1. Pedimos a Supabase solo las deudas PENDIENTES de ESTE jugador
+    const { data: misDeudas, error } = await db
+        .from('detalle_pagos')
+        .select('*')
+        .eq('id_jugador', jugadorActual.id) // Solo de este ID
+        .eq('pagado', false)                // Solo las no pagadas
+        .order('jornada', { ascending: true });
+
+    if (error) {
+        console.error("Error al cargar las deudas:", error.message);
+        textoDeudas.innerHTML = "Error al consultar tus deudas.";
+        return;
+    }
 
     // 2. Comprobamos si tiene deudas
-    if (misDeudas.length === 0) {
+    if (!misDeudas || misDeudas.length === 0) {
         // ESTÁ AL DÍA
         textoDeudas.innerHTML = "¡Estás al día! No debes nada.";
         textoDeudas.style.color = ""; // Quitamos cualquier rojo residual
     } else {
         // TIENE DEUDAS
         let sumaTotal = 0;
-
-        // Empezamos a crear una lista HTML para el desglose
         let listaDesgloseHTML = `<ul style="list-style-type: none; padding-left: 0; margin-top: 10px; color: #333333; font-size: 0.9em;">`;
 
         misDeudas.forEach(deuda => {
-            sumaTotal += deuda.total;
-            // Añadimos cada jornada como un elemento de lista (<li>)
+            // En BBDD tenemos posición y rojas por separado, así que las sumamos
+            const totalJornada = deuda.importe_posicion + deuda.importe_rojas;
+            sumaTotal += totalJornada;
+
+            // Añadimos cada jornada al HTML (incluyendo el desglose en gris)
             listaDesgloseHTML += `<li style="margin-bottom: 5px; padding-left: 10px; border-left: 3px solid #db2028;">
-                Jornada ${deuda.jornada}: <strong>${deuda.total.toFixed(2)}€</strong>
+                Jornada ${deuda.jornada}: <strong>${totalJornada.toFixed(2)}€</strong> 
+                <span style="font-size: 0.8em; color: gray;">(Pos: ${deuda.importe_posicion}€ | Roj: ${deuda.importe_rojas}€)</span>
             </li>`;
         });
 
         listaDesgloseHTML += `</ul>`; // Cerramos la lista
 
-        // Inyectamos el total resaltado en rojo y, justo debajo, la lista de desglose
+        // Inyectamos el total resaltado en rojo y la lista de desglose debajo
         textoDeudas.innerHTML = `
             <div style="color: #db2028; font-weight: bold; font-size: 1.0em; margin-bottom: 10px;">
                 Debes un total de ${sumaTotal.toFixed(2)} €
             </div>
             ${listaDesgloseHTML}
         `;
-
-        // Vaciamos el color global porque ahora lo controlamos etiqueta por etiqueta en el HTML de arriba
         textoDeudas.style.color = "";
     }
 }
 
+
 // ==========================================
-// 2.2 LÓGICA: Tarjeta del Farolillo Rojo
+// 2.2 LÓGICA: Tarjeta del Farolillo Rojo (Conectada a BBDD)
 // ==========================================
-function actualizarFarolillo() {
-    // 1. Sumamos la deuda acumulada de cada jugador (por si hubiera varias filas del mismo)
-    const totales = {};
-    todasLasDeudasFalsas.forEach(deuda => {
-        if (!totales[deuda.nombre]) {
-            totales[deuda.nombre] = 0;
+async function actualizarFarolillo() {
+    // 1. Pedimos TODAS las deudas y TODOS los jugadores a Supabase
+    const { data: todasLasDeudas, errorDeudas } = await db.from('detalle_pagos').select('*');
+    const { data: todosLosJugadores, errorJugadores } = await db.from('jugadores').select('*');
+
+    if (errorDeudas || errorJugadores) {
+        console.error("Error al cargar datos para el farolillo.");
+        return;
+    }
+
+    // 2. Sumamos la deuda total generada por cada ID de jugador
+    const totalesPorId = {};
+    todasLasDeudas.forEach(deuda => {
+        if (!totalesPorId[deuda.id_jugador]) {
+            totalesPorId[deuda.id_jugador] = 0;
         }
-        totales[deuda.nombre] += deuda.total;
+        // Sumamos posición + rojas
+        totalesPorId[deuda.id_jugador] += (deuda.importe_posicion + deuda.importe_rojas);
     });
 
-    // 2. Buscamos quién tiene el número más alto
+    // 3. Buscamos el ID que ha generado la deuda más alta
     let maxDeuda = -1;
-    nombreFarolilloActual = ""; // Limpiamos por si acaso
+    let idFarolillo = null;
 
-    for (const [nombre, total] of Object.entries(totales)) {
+    for (const [id_jugador, total] of Object.entries(totalesPorId)) {
         if (total > maxDeuda) {
             maxDeuda = total;
-            nombreFarolilloActual = nombre;
+            idFarolillo = parseInt(id_jugador);
         }
     }
 
-    // 3. Inyectamos el texto con el nuevo formato HTML
+    // 4. Buscamos los datos de ese desgraciado en la lista de jugadores
+    const jugadorFarolillo = todosLosJugadores.find(j => j.id === idFarolillo);
+
+    // 5. Inyectamos los datos en el HTML
     const textoFarolillo = document.getElementById('texto-el-ultimo');
-    if (textoFarolillo && nombreFarolilloActual !== "") {
+    if (textoFarolillo && jugadorFarolillo) {
+
+        // Guardamos el nombre globalmente para que el botón de insultar sepa a quién va dirigido
+        nombreFarolilloActual = jugadorFarolillo.nombre;
+        idFarolilloActual = jugadorFarolillo.id;
+
         textoFarolillo.innerHTML = `
-            Como pedazo de farolo tenemos a: <strong>${nombreFarolilloActual.toUpperCase()}</strong> con un total pagado de <strong>${maxDeuda.toFixed(2)}€</strong>.
+            Como pedazo de farolo tenemos a: <strong>${jugadorFarolillo.nombre.toUpperCase()}</strong> habiendo pagado un total de <strong>${maxDeuda.toFixed(2)}€</strong>.
             <br><br>
-            ¡No pierdas la oportunidad de reirte de él y envíale un mensaje ahora mismo!
+            ¡No pierdas la oportunidad de reírte de él y envíale un mensaje ahora mismo!
         `;
     }
 
-    // 4. Cambiamos la foto (buscamos la imagen por su clase)
+    // 6. Cambiamos la foto usando el nombre del archivo de la BBDD
     const imagenFarolillo = document.querySelector('.foto-farolillo');
-    if (imagenFarolillo && nombreFarolilloActual !== "") {
-        // Si no encuentra foto en nuestro diccionario, ponemos una de fallback
-        imagenFarolillo.src = fotosJugadores[nombreFarolilloActual] || "foto_prueba.jpeg";
+    if (imagenFarolillo && jugadorFarolillo) {
+        // Si el jugador tiene foto en la BBDD la usa, si no, usa la de prueba
+        imagenFarolillo.src = jugadorFarolillo.foto || "foto_prueba.jpeg";
     }
 }
 
 
 // ==========================================
-// 2.3 LÓGICA: Tabla de Clasificación General
+// 2.3 LÓGICA: Tabla de Clasificación General (Conectada a BBDD)
 // ==========================================
-function actualizarClasificacionGeneral() {
+async function actualizarClasificacionGeneral() {
     const cuerpoTabla = document.getElementById('cuerpo-tabla-clasificacion');
     if (!cuerpoTabla) return;
 
-    // ==== MAGIA: CONTAR JORNADAS ÚNICAS ====
-    // 1. Extraemos solo los números de jornada de todas las deudas
-    const listaDeJornadas = todasLasDeudasFalsas.map(deuda => deuda.jornada);
 
-    // 2. Usamos "Set" para eliminar los duplicados (ej: 1,1,1,2,2 -> 1,2)
+
+    // 1. Pedimos TODOS los jugadores y TODAS las deudas a Supabase
+    const { data: todosLosJugadores, errorJugadores } = await db.from('jugadores').select('*');
+    const { data: todasLasDeudas, errorDeudas } = await db.from('detalle_pagos').select('*');
+
+    if (errorJugadores || errorDeudas) {
+        console.error("Error al cargar la clasificación.");
+        cuerpoTabla.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Error al cargar datos.</td></tr>';
+        return;
+    }
+
+    // ==== MAGIA 1: CONTAR JORNADAS ÚNICAS REALES ====
+    const listaDeJornadas = todasLasDeudas.map(deuda => deuda.jornada);
     const jornadasUnicas = new Set(listaDeJornadas);
+    const numeroJornadasJugadas = jornadasUnicas.size; // Esto sabrá automáticamente si vais por la 4 o por la 15
 
-    // 3. Contamos cuántas hay en total
-    const numeroJornadasJugadas = jornadasUnicas.size;
-
-    // Preparamos a todos los jugadores
+    // 2. Preparamos el resumen para cada jugador usando su ID real
     const resumenJugadores = {};
-    jugadoresBBDD.forEach(nombre => {
-        resumenJugadores[nombre] = { nombre: nombre, eurosPosicion: 0, eurosRojas: 0, total: 0 };
+    todosLosJugadores.forEach(jugador => {
+        resumenJugadores[jugador.id] = {
+            nombre: jugador.nombre,
+            eurosPosicion: 0,
+            eurosRojas: 0,
+            total: 0
+        };
     });
 
-    // Sumamos los datos
-    todasLasDeudasFalsas.forEach(deuda => {
-        if (resumenJugadores[deuda.nombre]) {
-            resumenJugadores[deuda.nombre].eurosPosicion += deuda.eurosPosicion;
-            resumenJugadores[deuda.nombre].eurosRojas += deuda.eurosRojas;
-            resumenJugadores[deuda.nombre].total += deuda.total;
+    // 3. Sumamos los euros reales de la BBDD a cada jugador
+    todasLasDeudas.forEach(deuda => {
+        // En BBDD las columnas se llaman importe_posicion e importe_rojas
+        if (resumenJugadores[deuda.id_jugador]) {
+            resumenJugadores[deuda.id_jugador].eurosPosicion += deuda.importe_posicion;
+            resumenJugadores[deuda.id_jugador].eurosRojas += deuda.importe_rojas;
+            resumenJugadores[deuda.id_jugador].total += (deuda.importe_posicion + deuda.importe_rojas);
         }
     });
 
-    // Ordenamos de menor a mayor
+    // 4. Ordenamos a los jugadores de menor a mayor deuda
     const listaClasificacion = Object.values(resumenJugadores);
     listaClasificacion.sort((a, b) => a.total - b.total);
 
@@ -311,18 +378,17 @@ function actualizarClasificacionGeneral() {
 
     let boteTotalGlobal = 0;
 
-    // Pintamos las filas
+    // 5. Pintamos las filas una a una
     listaClasificacion.forEach((jugador, index) => {
         boteTotalGlobal += jugador.total;
 
-        // ==== PROYECCIÓN INDIVIDUAL AUTOMÁTICA ====
+        // Proyección individual automática a 38 jornadas
         let proyeccion = 0;
         if (numeroJornadasJugadas > 0) {
             proyeccion = (jugador.total / numeroJornadasJugadas) * 38;
         }
 
         const fila = document.createElement('tr');
-
         fila.innerHTML = `
             <td>${index + 1}</td>
             <td><strong>${jugador.nombre}</strong></td>
@@ -334,44 +400,41 @@ function actualizarClasificacionGeneral() {
         cuerpoTabla.appendChild(fila);
     });
 
-    // ==== ACTUALIZAR TARJETAS GLOBALES ====
+    // ==== MAGIA 2: ACTUALIZAR TARJETAS GLOBALES ====
     const spanTotal = document.getElementById('total-pagado-global');
     const spanProyeccion = document.getElementById('proyeccion-global');
     const spanComida = document.getElementById('comida-persona');
 
     if (spanTotal) spanTotal.textContent = boteTotalGlobal.toFixed(2) + ' €';
 
-    // 1. Calculamos la proyección global primero (fuera del if para poder reutilizarla)
     let proyeccionGlobal = 0;
     if (numeroJornadasJugadas > 0) {
         proyeccionGlobal = (boteTotalGlobal / numeroJornadasJugadas) * 38;
     }
 
-    // 2. Pintamos la proyección global
     if (spanProyeccion) {
         spanProyeccion.textContent = proyeccionGlobal.toFixed(2) + ' €';
     }
 
-    // 3. Calculamos el bote para la comida basado en la PROYECCIÓN TOTAL (¡Tu corrección!)
     if (spanComida) {
-        const precioComidaPersona = proyeccionGlobal / jugadoresBBDD.length;
+        // Dividimos entre los 14 jugadores que sois realmente en la base de datos
+        const precioComidaPersona = proyeccionGlobal / todosLosJugadores.length;
         spanComida.textContent = precioComidaPersona.toFixed(2) + ' €';
     }
-
 }
 
 
 // 3. LÓGICA: De Popup a Página Principal (¡Nuevo!)
-btnContinuar.addEventListener('click', () => {
+btnContinuar.addEventListener('click', async () => {
     // Cuando pulsen "OK", ocultamos el popup
     popupBienvenida.classList.add('oculto');
 
     // ¡NUEVO! Calculamos y escribimos las deudas antes de abrir el telón
-    actualizarTarjetaDeudas();
+    await actualizarTarjetaDeudas();
 
-    actualizarFarolillo();
+    await actualizarFarolillo();
 
-    actualizarClasificacionGeneral();
+    await actualizarClasificacionGeneral();
 
     // Y mostramos por fin la página principal con las tarjetas
     paginaPrincipal.classList.remove('oculto');
@@ -390,25 +453,43 @@ btnCambiarJugador.addEventListener('click', () => {
 });
 
 
-// 5. LÓGICA: Popup del Farolillo Rojo
+// ==========================================
+// 5. LÓGICA: Popup del Farolillo Rojo (Conectado a Supabase por ID)
+// ==========================================
 // Atrapamos los elementos
 const btnGenerarUltimo = document.getElementById('btn-generar-ultimo');
 const popupUltimo = document.getElementById('popup-ultimo');
 const btnCerrarPopupUltimo = document.getElementById('btn-cerrar-popup-ultimo');
+const textoPopupUltimo = document.getElementById('texto-popup-ultimo'); // Atrapamos el texto
 
+// Cuando pulsamos el botón rojo de la tarjeta, descargamos una frase de ESTE jugador
+btnGenerarUltimo.addEventListener('click', async () => {
 
-// Cuando pulsamos el botón rojo de la tarjeta, mostramos el popup con frase aleatoria
-btnGenerarUltimo.addEventListener('click', () => {
-    // 1. Elegimos una frase al azar de la BBDD
-    const indice = Math.floor(Math.random() * mensajesHumillantesBBDD.length);
-    let fraseElegida = mensajesHumillantesBBDD[indice];
-
-    // 2. Sustituimos el comodín {NOMBRE} por el nombre real del farolillo
-    fraseElegida = fraseElegida.replace("{NOMBRE}", nombreFarolilloActual);
-
-    // 3. Lo metemos en el popup y lo mostramos
-    document.getElementById('texto-popup-ultimo').textContent = fraseElegida;
+    // 1. Mostramos el popup con un texto de "Cargando..."
+    textoPopupUltimo.textContent = "Cargando...";
     popupUltimo.classList.remove('oculto');
+
+    // Si por algún motivo no tenemos el ID, cortamos aquí
+    if (!idFarolilloActual) return;
+
+    // 2. Pedimos a Supabase los mensajes, PERO SOLO LOS DE ESTE JUGADOR
+    const { data: mensajesHumillantes, error } = await db
+        .from('mensajes_ultimo')
+        .select('mensaje')
+        .eq('id_jugador', idFarolilloActual); // Aquí está el filtro mágico
+
+    // 3. Si hay un error de conexión o no hay mensajes para él en la BBDD
+    if (error || !mensajesHumillantes || mensajesHumillantes.length === 0) {
+        textoPopupUltimo.textContent = `Madre mía ${nombreFarolilloActual}... ¿haces las alineaciones con los ojos cerrados?`;
+        return;
+    }
+
+    // 4. Elegimos uno al azar de SU propia lista
+    const indice = Math.floor(Math.random() * mensajesHumillantes.length);
+    const fraseElegida = mensajesHumillantes[indice].mensaje;
+
+    // 5. Lo inyectamos en el popup (ya vienen personalizados desde la BBDD)
+    textoPopupUltimo.textContent = fraseElegida;
 });
 
 // Cuando pulsamos "Cerrar" dentro del popup, lo volvemos a ocultar

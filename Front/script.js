@@ -1,4 +1,33 @@
 // ==========================================
+// 1. CONEXIÓN A LA BASE DE DATOS SUPABASE
+// ==========================================
+const supabaseUrl = 'https://ushakkxcxuuwbawbccgw.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzaGFra3hjeHV1d2Jhd2JjY2d3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5NTg5NzYsImV4cCI6MjEwNDUzNDk3Nn0.rN_VBQu5XBPfhtzQ0jwGF1vMPM8TQZYjzBkZVwWpmag';
+
+// Usamos 'db' en lugar de 'supabase' para evitar el conflicto
+const db = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+async function probarConexion() {
+    console.log("Intentando conectar a Supabase...");
+
+    const { data: jugadores, error } = await db
+        .from('jugadores')
+        .select('*')
+        .order('id', { ascending: true });
+
+    if (error) {
+        console.error("¡Error al conectar!", error.message);
+    } else {
+        console.log("¡CONEXIÓN EXITOSA! 🎉 Aquí están tus jugadores de la BBDD:");
+        console.log(jugadores);
+    }
+}
+
+probarConexion();
+
+
+
+// ==========================================
 // PANEL PRINCIPAL
 // ==========================================
 

@@ -547,6 +547,8 @@ btnAccesoTesorero.addEventListener('click', async () => {
         vistaPrincipal.classList.add('oculto');
         vistaTesorero.classList.remove('oculto');
 
+        actualizarPantallaSaldar();
+
     } else {
         // No hay nadie en la base de datos con esa contraseña
         alert('❌ Contraseña incorrecta. Acceso denegado.');
@@ -601,9 +603,16 @@ function cambiarPestanaTesorero(btnSeleccionado, contenidoSeleccionado) {
 }
 
 // 4. Les decimos a los botones que "escuchen" (escuchadores de eventos)
-btnSaldar.addEventListener('click', () => cambiarPestanaTesorero(btnSaldar, contenidoSaldar));
+btnSaldar.addEventListener('click', () => {
+    cambiarPestanaTesorero(btnSaldar, contenidoSaldar);
+    actualizarPantallaSaldar(); // ¡Novedad! Al entrar aquí, pedimos los datos a Supabase
+});
 btnAnadir.addEventListener('click', () => cambiarPestanaTesorero(btnAnadir, contenidoAnadir));
-btnMensaje.addEventListener('click', () => cambiarPestanaTesorero(btnMensaje, contenidoMensaje));
+btnMensaje.addEventListener('click', () => {
+    cambiarPestanaTesorero(btnMensaje, contenidoMensaje);
+    actualizarMensajeWhatsApp(); // Se genera el texto fresquito de la BBDD al entrar
+});
+
 
 // ==========================================
 //  PESTAÑA AÑADIR DEUDAS
@@ -716,7 +725,6 @@ if (btnAnadirLista) {
     });
 }
 
-// 3. EVENTO: GUARDAR JORNADA COMPLETA
 // 3. EVENTO: GUARDAR JORNADA COMPLETA (¡Ahora en Supabase!)
 if (btnGuardarJornada) {
     // Le ponemos ASYNC para poder mandar datos a la base de datos
@@ -798,38 +806,78 @@ if (btnGuardarJornada) {
     });
 }
 
-// 4. GENERADOR AUTOMÁTICO DE WHATSAPP
-function actualizarMensajeWhatsApp() {
+// ==========================================
+// 4. GENERADOR AUTOMÁTICO DE WHATSAPP (Conectado a BBDD)
+// ==========================================
+async function actualizarMensajeWhatsApp() {
     const textareaWhatsapp = document.getElementById('texto-whatsapp');
-    let mensaje = `🚨 *DEUDAS PENDIENTES* 🚨\n\n`;
+    if (!textareaWhatsapp) return;
 
-    // Ahora leemos de la mochila definitiva, no del carrito temporal
-    if (mochilaDeudas.length === 0) {
-        mensaje += `✅ Todos al día, no hay deudas nuevas.\n\n`;
-    } else {
-        const deudasAgrupadas = {};
+    // 1. Ponemos un texto temporal por si tarda medio segundo en descargar
+    textareaWhatsapp.value = "⏳ Generando mensaje de deudas...";
 
-        mochilaDeudas.forEach(ficha => {
-            if (!deudasAgrupadas[ficha.jornada]) {
-                deudasAgrupadas[ficha.jornada] = [];
-            }
-            deudasAgrupadas[ficha.jornada].push(ficha);
-        });
+    try {
+        // 2. Pedimos los jugadores y SOLO las deudas que están sin pagar
+        const { data: todosLosJugadores } = await db.from('jugadores').select('id, nombre');
+        const { data: deudasPendientes, error } = await db.from('detalle_pagos').select('*').eq('pagado', false);
 
-        for (const jornada in deudasAgrupadas) {
-            mensaje += `*Jornada ${jornada}*\n`;
+        if (error) throw new Error("Error obteniendo las deudas.");
 
-            deudasAgrupadas[jornada].forEach(ficha => {
-                mensaje += `🔴 ${ficha.nombre}: ${ficha.total.toFixed(2)}€\n`;
+        let mensaje = `🚨 *DEUDAS ACTUALIZADAS* 🚨\nPara ver consultar la clasificación y otros detalles entrar en:\n👉 www.tu-web-de-la-liga.com\n\n`;
+
+        // Si la BBDD nos dice que no hay nada pendiente...
+        if (!deudasPendientes || deudasPendientes.length === 0) {
+            mensaje += `✅ Todos al día, no hay deudas nuevas.\n\n`;
+        } else {
+
+            // 3. Agrupamos las deudas por número de jornada
+            const deudasAgrupadas = {};
+
+            deudasPendientes.forEach(deuda => {
+                const jornada = deuda.jornada;
+                const jugador = todosLosJugadores.find(j => j.id === deuda.id_jugador);
+                const nombreJugador = jugador ? jugador.nombre : 'Desconocido';
+                const totalEuros = deuda.importe_posicion + deuda.importe_rojas;
+
+                // Creamos el cajón de esa jornada si no existe
+                if (!deudasAgrupadas[jornada]) {
+                    deudasAgrupadas[jornada] = [];
+                }
+
+                // Si el jugador ya tenía una deuda en esta jornada, se la sumamos. Si no, lo añadimos.
+                const deudaExistente = deudasAgrupadas[jornada].find(d => d.nombre === nombreJugador);
+                if (deudaExistente) {
+                    deudaExistente.total += totalEuros;
+                } else {
+                    deudasAgrupadas[jornada].push({ nombre: nombreJugador, total: totalEuros });
+                }
             });
-            mensaje += `\n`;
+
+            // 4. Ordenamos las jornadas de menor a mayor (Ej: 1, 2, 3...)
+            const jornadasOrdenadas = Object.keys(deudasAgrupadas).sort((a, b) => parseInt(a) - parseInt(b));
+
+            // 5. Construimos el texto final para el WhatsApp
+            jornadasOrdenadas.forEach(jornada => {
+                mensaje += `*Jornada ${jornada}*\n`;
+
+                // Ordenamos a los jugadores alfabéticamente para que quede más limpio
+                deudasAgrupadas[jornada].sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+                deudasAgrupadas[jornada].forEach(ficha => {
+                    mensaje += `🔴 ${ficha.nombre}: ${ficha.total.toFixed(2)}€\n`;
+                });
+                mensaje += `\n`;
+            });
         }
-    }
 
-    mensaje += `💸 Por favor, id haciendo los Bizum al tesorero. ¡Gracias! 🙏`;
+        mensaje += `💸 Por favor, id haciendo los Bizum al tesorero. ¡Gracias! 🙏`;
 
-    if (textareaWhatsapp) {
+        // 6. Inyectamos el texto final en la caja de la web
         textareaWhatsapp.value = mensaje;
+
+    } catch (error) {
+        console.error("Error en WhatsApp:", error.message);
+        textareaWhatsapp.value = "❌ Hubo un error al generar el mensaje. Revisa la conexión.";
     }
 }
 
@@ -850,32 +898,48 @@ if (btnCopiarGeneral) {
 
 
 // ==========================================
-// PESTAÑA SALDAR Y CORREGIR ERRORES
+// PESTAÑA SALDAR Y CORREGIR ERRORES (Conectado a BBDD)
 // ==========================================
 
-// Mochila para los pagos realizados (historial)
-let historialPagos = [];
-
-function actualizarPantallaSaldar() {
-    // Buscamos tus contenedores exactos
+async function actualizarPantallaSaldar() {
+    // Buscamos los contenedores
     const contenedorPendientes = document.querySelector('.tarjeta-pendientes .lista-pagos');
     const contenedorHistorial = document.querySelector('.tarjeta-historial .lista-pagos');
 
     if (!contenedorPendientes || !contenedorHistorial) return;
 
-    // 1. Vaciamos las listas para volver a pintarlas actualizadas
+    // Ponemos un mensajito de carga mientras consultamos a Supabase
+    contenedorPendientes.innerHTML = '<p style="text-align:center;">Cargando deudas...</p>';
+    contenedorHistorial.innerHTML = '<p style="text-align:center;">Cargando historial...</p>';
+
+    // 1. Nos traemos TODOS los jugadores y TODAS las deudas
+    const { data: todosLosJugadores } = await db.from('jugadores').select('id, nombre');
+    const { data: todasLasDeudas, error } = await db.from('detalle_pagos').select('*').order('id', { ascending: false });
+
+    if (error) {
+        contenedorPendientes.innerHTML = '<p style="color:red; text-align:center;">Error cargando datos.</p>';
+        return;
+    }
+
+    // 2. Filtramos y separamos en dos montones: Las que están sin pagar y las pagadas
+    const deudasPendientes = todasLasDeudas.filter(d => d.pagado === false);
+    const deudasSaldadas = todasLasDeudas.filter(d => d.pagado === true);
+
+    // Vaciamos las listas para pintarlas
     contenedorPendientes.innerHTML = '';
     contenedorHistorial.innerHTML = '';
 
     // --- RENDERIZAR DEUDAS PENDIENTES ---
-    if (mochilaDeudas.length === 0) {
+    if (deudasPendientes.length === 0) {
         contenedorPendientes.innerHTML = `<p class="texto-ayuda-mensaje" style="text-align:center; padding: 10px;">No hay deudas pendientes.</p>`;
     } else {
-        mochilaDeudas.forEach((ficha, index) => {
-            const divItem = document.createElement('div');
-            divItem.className = 'item-pago'; // Usamos tu clase exacta
+        deudasPendientes.forEach(deuda => {
+            const jugador = todosLosJugadores.find(j => j.id === deuda.id_jugador);
+            const nombreJugador = jugador ? jugador.nombre : 'Desconocido';
+            const totalEuros = deuda.importe_posicion + deuda.importe_rojas;
 
-            // Inyectamos tu HTML con la papelera de 12x12 a la izquierda
+            const divItem = document.createElement('div');
+            divItem.className = 'item-pago';
             divItem.innerHTML = `
                 <button class="btn-borrar-error" title="Borrar por error">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12">
@@ -885,11 +949,9 @@ function actualizarPantallaSaldar() {
                         <line x1="14" y1="11" x2="14" y2="17"></line>
                     </svg>
                 </button>
-
-                <span class="jornada-pago">Jornada ${ficha.jornada}</span>
-                <span class="nombre-pago">${ficha.nombre}</span>
-                <span class="cantidad-rojo">-${ficha.total.toFixed(2)}€</span>
-                
+                <span class="jornada-pago">Jornada ${deuda.jornada}</span>
+                <span class="nombre-pago">${nombreJugador}</span>
+                <span class="cantidad-rojo">-${totalEuros.toFixed(2)}€</span>
                 <button class="btn-cobrar" title="Marcar como pagado">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
                         <polyline points="20 6 9 17 4 12"></polyline>
@@ -897,24 +959,23 @@ function actualizarPantallaSaldar() {
                 </button>
             `;
 
-            // Acción: BORRAR POR ERROR (Papelera)
+            // Acción: BORRAR POR ERROR (Papelera) -> DELETE en Supabase
             const btnBorrar = divItem.querySelector('.btn-borrar-error');
-            btnBorrar.addEventListener('click', () => {
-                if (confirm(`⚠️ ¿Borrar la deuda de ${ficha.nombre} (Jornada ${ficha.jornada})?`)) {
-                    mochilaDeudas.splice(index, 1); // Se elimina totalmente
-                    actualizarPantallaSaldar();
+            btnBorrar.addEventListener('click', async () => {
+                if (confirm(`⚠️ ¿Borrar DE LA BASE DE DATOS la deuda de ${nombreJugador} (Jornada ${deuda.jornada})?`)) {
+                    await db.from('detalle_pagos').delete().eq('id', deuda.id);
+                    actualizarPantallaSaldar(); // Recargamos la pantalla
                     actualizarMensajeWhatsApp();
                     actualizarMensajeGeneral();
                 }
             });
 
-            // Acción: COBRAR (Verde)
+            // Acción: COBRAR (Check Verde) -> UPDATE pagado = true
             const btnCobrar = divItem.querySelector('.btn-cobrar');
-            btnCobrar.addEventListener('click', () => {
-                if (confirm(`¿Marcar los ${ficha.total.toFixed(2)}€ de ${ficha.nombre} como PAGADOS?`)) {
-                    const [deudaCobrada] = mochilaDeudas.splice(index, 1);
-                    historialPagos.unshift(deudaCobrada); // Pasa al principio del historial
-                    actualizarPantallaSaldar();
+            btnCobrar.addEventListener('click', async () => {
+                if (confirm(`¿Marcar los ${totalEuros.toFixed(2)}€ de ${nombreJugador} como PAGADOS?`)) {
+                    await db.from('detalle_pagos').update({ pagado: true }).eq('id', deuda.id);
+                    actualizarPantallaSaldar(); // Recargamos la pantalla
                     actualizarMensajeWhatsApp();
                 }
             });
@@ -923,18 +984,26 @@ function actualizarPantallaSaldar() {
         });
     }
 
-    // --- RENDERIZAR HISTORIAL DE ÚLTIMOS PAGOS ---
-    if (historialPagos.length === 0) {
+    // --- RENDERIZAR HISTORIAL (PAGADOS) ---
+    if (deudasSaldadas.length === 0) {
         contenedorHistorial.innerHTML = `<p class="texto-ayuda-mensaje" style="text-align:center; padding: 10px;">No hay pagos recientes.</p>`;
     } else {
-        historialPagos.forEach((ficha, index) => {
+
+        // 👇 LÍNEA NUEVA: Recortamos la lista para quedarnos solo con las 15 primeras
+        const ultimosPagos = deudasSaldadas.slice(0, 10);
+
+        // 👇 CAMBIO: Ahora hacemos el forEach sobre 'ultimosPagos' en lugar de 'deudasSaldadas'
+        ultimosPagos.forEach(deuda => {
+            const jugador = todosLosJugadores.find(j => j.id === deuda.id_jugador);
+            const nombreJugador = jugador ? jugador.nombre : 'Desconocido';
+            const totalEuros = deuda.importe_posicion + deuda.importe_rojas;
+
             const divItem = document.createElement('div');
             divItem.className = 'item-pago';
-
             divItem.innerHTML = `
-                <span class="jornada-pago">Jornada ${ficha.jornada}</span>
-                <span class="nombre-pago">${ficha.nombre}</span>
-                <span class="cantidad-verde">+${ficha.total.toFixed(2)}€</span>
+                <span class="jornada-pago">Jornada ${deuda.jornada}</span>
+                <span class="nombre-pago">${nombreJugador}</span>
+                <span class="cantidad-verde">+${totalEuros.toFixed(2)}€</span>
                 <button class="btn-deshacer" title="Deshacer pago">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="20" height="20">
                         <path d="M3 7v6h6"></path>
@@ -943,13 +1012,12 @@ function actualizarPantallaSaldar() {
                 </button>
             `;
 
-            // Acción: DESHACER PAGO
+            // Acción: DESHACER PAGO -> UPDATE pagado = false
             const btnDeshacer = divItem.querySelector('.btn-deshacer');
-            btnDeshacer.addEventListener('click', () => {
-                if (confirm(`¿Deshacer el pago de ${ficha.nombre} y que vuelva a aparecer como deuda?`)) {
-                    const [pagoDevuelto] = historialPagos.splice(index, 1);
-                    mochilaDeudas.push(pagoDevuelto); // Vuelve a Pendientes
-                    actualizarPantallaSaldar();
+            btnDeshacer.addEventListener('click', async () => {
+                if (confirm(`¿Deshacer el pago de ${nombreJugador} y que vuelva a aparecer como deuda?`)) {
+                    await db.from('detalle_pagos').update({ pagado: false }).eq('id', deuda.id);
+                    actualizarPantallaSaldar(); // Recargamos la pantalla
                     actualizarMensajeWhatsApp();
                 }
             });
@@ -957,7 +1025,7 @@ function actualizarPantallaSaldar() {
             contenedorHistorial.appendChild(divItem);
         });
     }
-}
+} // <-- Cierre final de la función actualizarPantallaSaldar
 
 // ==========================================
 //  MENSAJE AUTOMÁTICO: CLASIFICACIÓN GENERAL

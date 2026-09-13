@@ -1107,7 +1107,7 @@ input[type="number"] {
 }
 
 .caja-whatsapp {
-    min-height: 250px;
+    min-height: 400px;
     resize: none;
     line-height: 1.5;
 }

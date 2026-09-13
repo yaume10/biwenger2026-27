@@ -430,11 +430,11 @@ btnContinuar.addEventListener('click', async () => {
     popupBienvenida.classList.add('oculto');
 
     // ¡NUEVO! Calculamos y escribimos las deudas antes de abrir el telón
-    await actualizarTarjetaDeudas();
-
-    await actualizarFarolillo();
-
-    await actualizarClasificacionGeneral();
+    await Promise.all([
+        actualizarTarjetaDeudas(),
+        actualizarFarolillo(),
+        actualizarClasificacionGeneral()
+    ]);
 
     // Y mostramos por fin la página principal con las tarjetas
     paginaPrincipal.classList.remove('oculto');
@@ -511,26 +511,44 @@ if (btnCopiarFarolillo && textoBroma) {
 
 
 // ==========================================
-// ACCESO AL PANEL DE TESORERO
+// ACCESO AL PANEL DE TESORERO (Supabase)
 // ==========================================
 const btnAccesoTesorero = document.getElementById('btn-acceso-tesorero');
-
-// NOTA: Ajusta estos dos IDs a los que estés usando en tu HTML para envolver tus pantallas
 const vistaPrincipal = document.getElementById('login_jugador');
 const vistaTesorero = document.getElementById('panel_tesorero');
 
-btnAccesoTesorero.addEventListener('click', () => {
-    // 1. Lanzamos la ventana emergente nativa pidiendo la clave
+// ¡Le ponemos async porque vamos a consultar a la BBDD!
+btnAccesoTesorero.addEventListener('click', async () => {
+
+    // 1. Lanzamos la ventana emergente pidiendo la clave
     const contrasena = prompt('🔒 Introduce la contraseña del Tesorero:');
 
-    // 2. Comprobamos la contraseña (aquí ponemos '1234' de prueba)
-    if (contrasena === '1234') {
-        // 3. Si es correcta: escondemos la vista normal y mostramos el panel del tesorero
+    // 2. Si pulsa "Cancelar" o lo deja en blanco, no hacemos nada
+    if (contrasena === null || contrasena.trim() === "") return;
+
+    // 3. Vamos a Supabase a buscar si ALGÚN jugador tiene esa clave
+    const { data: tesoreroEncontrado, error } = await db
+        .from('jugadores')
+        .select('nombre, password')
+        .eq('password', contrasena); // Busca la coincidencia exacta de la clave
+
+    if (error) {
+        alert('❌ Error de conexión al verificar la contraseña.');
+        return;
+    }
+
+    // 4. Comprobamos si Supabase nos ha devuelto a alguien (en tu caso, a Iván)
+    if (tesoreroEncontrado && tesoreroEncontrado.length > 0) {
+
+        // Opcional: Le damos la bienvenida por su nombre para que quede chulo
+        alert(`✅ ¡Acceso concedido!`);
+
+        // Escondemos la vista normal y mostramos el panel del tesorero
         vistaPrincipal.classList.add('oculto');
         vistaTesorero.classList.remove('oculto');
 
-    } else if (contrasena !== null) {
-        // 4. Si ha escrito algo mal (y no le ha dado a "Cancelar")
+    } else {
+        // No hay nadie en la base de datos con esa contraseña
         alert('❌ Contraseña incorrecta. Acceso denegado.');
     }
 });
@@ -633,14 +651,14 @@ if (btnAnadirLista) {
         const eurosRoj = parseFloat(inputRojas.value) || 0;
 
         if (jugador === "") {
-            alert("⚠️ ¡Eh! Selecciona un jugador primero.");
+            alert("⚠️ Selecciona un jugador primero.");
             return;
         }
 
         const total = eurosPos + eurosRoj;
 
         if (total === 0) {
-            alert("⚠️ El jugador no tiene ninguna deuda (el total es 0€).");
+            alert("⚠️ El jugador no tiene ninguna deuda.");
             return;
         }
 
@@ -699,8 +717,10 @@ if (btnAnadirLista) {
 }
 
 // 3. EVENTO: GUARDAR JORNADA COMPLETA
+// 3. EVENTO: GUARDAR JORNADA COMPLETA (¡Ahora en Supabase!)
 if (btnGuardarJornada) {
-    btnGuardarJornada.addEventListener('click', () => {
+    // Le ponemos ASYNC para poder mandar datos a la base de datos
+    btnGuardarJornada.addEventListener('click', async () => {
         const inputJornada = document.getElementById('tesorero-jornada');
         const numJornada = inputJornada.value;
 
@@ -717,37 +737,64 @@ if (btnGuardarJornada) {
             return;
         }
 
-        // --- MAGIA: PASAMOS DEL CARRITO A LA MOCHILA ---
-        // Le aplicamos el número de jornada a todos los que estaban esperando en el carrito
-        carritoTemporal.forEach(ficha => {
-            mochilaDeudas.push({
-                jornada: numJornada, // Le ponemos la pegatina de la jornada a todos
-                nombre: ficha.nombre,
-                eurosPosicion: ficha.eurosPosicion,
-                eurosRojas: ficha.eurosRojas,
-                total: ficha.total
+        // Ponemos el botón en modo "cargando" para que el tesorero no haga doble clic por error
+        const textoOriginalBoton = btnGuardarJornada.innerHTML;
+        btnGuardarJornada.innerHTML = "⏳ Guardando Datos Jornada...";
+        btnGuardarJornada.disabled = true;
+
+        try {
+            // --- PASO A: NECESITAMOS LOS IDs REALES DE LOS JUGADORES ---
+            // Le pedimos a Supabase TODOS los jugadores para poder relacionar el "Nombre" del carrito con su "ID" real.
+            const { data: todosLosJugadores, error: errorJugadores } = await db.from('jugadores').select('id, nombre');
+
+            if (errorJugadores) throw new Error("Error al obtener los IDs de los jugadores.");
+
+            // --- PASO B: PREPARAMOS EL PAQUETE PARA SUPABASE ---
+            // Vamos a transformar tu 'carritoTemporal' en el formato exacto que pide la tabla 'detalle_pagos'
+            const paqueteDeudas = carritoTemporal.map(ficha => {
+
+                // Buscamos el ID del jugador cuyo nombre coincide con el de la ficha del carrito
+                const jugadorEncontrado = todosLosJugadores.find(j => j.nombre === ficha.nombre);
+
+                // Si por algún motivo el nombre del HTML no coincide con BBDD, avisamos por consola
+                if (!jugadorEncontrado) console.warn(`¡Ojo! No encuentro el ID para ${ficha.nombre}`);
+
+                return {
+                    id_jugador: jugadorEncontrado ? jugadorEncontrado.id : null,
+                    jornada: parseInt(numJornada),
+                    importe_posicion: ficha.eurosPosicion,
+                    importe_rojas: ficha.eurosRojas,
+                    pagado: false // Por defecto, todas las deudas nuevas nacen sin pagar
+                };
             });
-        });
 
-        // AHORA SÍ, actualizamos el WhatsApp con las deudas definitivas
-        actualizarMensajeWhatsApp();
-        actualizarPantallaSaldar();
-        actualizarMensajeGeneral();
+            // --- PASO C: ¡ENVIAMOS TODO A SUPABASE DE GOLPE! ---
+            const { error: errorInsert } = await db.from('detalle_pagos').insert(paqueteDeudas);
 
-        mostrarExitoBoton(btnGuardarJornada, '¡Guardado!');
+            if (errorInsert) throw new Error("Error al insertar las deudas: " + errorInsert.message);
 
-        // --- LIMPIEZA VISUAL Y DEL CARRITO TEMPORAL ---
+            // --- PASO D: ¡ÉXITO! LIMPIAMOS Y AVISAMOS ---
+            mostrarExitoBoton(btnGuardarJornada, '¡Guardado con éxito!');
 
-        carritoTemporal = []; // Vaciamos el carrito de espera
+            // Vaciamos el carrito de espera
+            carritoTemporal = [];
+            const itemsEnPantalla = document.querySelectorAll('.item-carrito');
+            itemsEnPantalla.forEach(item => item.remove());
 
-        const itemsEnPantalla = document.querySelectorAll('.item-carrito');
-        itemsEnPantalla.forEach(item => item.remove());
+            if (textoListaVacia) {
+                textoListaVacia.classList.remove('oculto');
+            }
 
-        if (textoListaVacia) {
-            textoListaVacia.classList.remove('oculto');
+            inputJornada.value = ""; // Vaciamos la jornada del input
+
+        } catch (error) {
+            console.error(error);
+            alert("❌ Ha habido un error al guardar: " + error.message);
+        } finally {
+            // Pase lo que pase (éxito o error), devolvemos el botón a la normalidad
+            btnGuardarJornada.innerHTML = textoOriginalBoton;
+            btnGuardarJornada.disabled = false;
         }
-
-        inputJornada.value = ""; // Vaciamos la jornada
     });
 }
 
@@ -962,25 +1009,38 @@ function actualizarMensajeGeneral() {
 }
 
 // ==========================================
-// LÓGICA: IMPORTAR CSV EN TESORERO
+// LÓGICA: IMPORTAR CSV EN TESORERO (Conectado a BBDD)
 // ==========================================
-
 const inputCsv = document.getElementById('input-csv');
 
 if (inputCsv) {
-    inputCsv.addEventListener('change', (evento) => {
+    // Le ponemos async porque vamos a interactuar con la nube
+    inputCsv.addEventListener('change', async (evento) => {
         const archivo = evento.target.files[0];
         if (!archivo) return;
 
-        const lector = new FileReader();
+        // Efecto visual de carga en el botón
+        const labelCsv = document.querySelector('.btn-csv');
+        const textoOriginalLabel = labelCsv.innerHTML;
+        labelCsv.innerHTML = "⏳ Subiendo a la BBDD...";
 
-        lector.onload = (e) => {
-            const contenido = e.target.result;
+        try {
+            // 1. Nos traemos la lista de jugadores reales para poder traducir "Nombres" a "IDs"
+            const { data: todosLosJugadores, error: errorJugadores } = await db.from('jugadores').select('id, nombre');
+            if (errorJugadores) throw new Error("No se pudo cargar la lista de jugadores para validar.");
+
+            // 2. Leemos el archivo físico usando una Promesa para que espere
+            const contenido = await new Promise((resolve, reject) => {
+                const lector = new FileReader();
+                lector.onload = (e) => resolve(e.target.result);
+                lector.onerror = () => reject(new Error("Error leyendo el archivo físico"));
+                lector.readAsText(archivo);
+            });
+
             const lineas = contenido.split('\n');
+            let paqueteDeudasCSV = [];
 
-            let deudasTemporales = [];
-            let huboError = false;
-
+            // 3. Analizamos el Excel línea a línea (saltando la cabecera)
             for (let i = 1; i < lineas.length; i++) {
                 const linea = lineas[i].trim();
                 if (!linea) continue;
@@ -988,52 +1048,73 @@ if (inputCsv) {
                 const columnas = linea.split(';');
                 if (columnas.length < 4) continue;
 
-                const nombre = columnas[0].trim();
+                const nombreExcel = columnas[0].trim();
 
-                // ==== VALIDACIÓN DE NOMBRE ====
-                // IMPORTANTE: Asegúrate de que la variable "jugadoresBBDD" 
-                // esté declarada arriba del todo en tu archivo JS.
-                if (!jugadoresBBDD.includes(nombre)) {
-                    alert(`❌ ERROR: El jugador "${nombre}" no existe en la base de datos (Fila ${i + 1}). Revisa las mayúsculas, tildes o espacios en el CSV. Importación cancelada.`);
-                    huboError = true;
-                    break;
+                // Comprobamos si el nombre del Excel coincide exactamente con alguien de Supabase
+                const jugadorEncontrado = todosLosJugadores.find(
+                    j => j.nombre.toLowerCase() === nombreExcel.toLowerCase()
+                );
+
+                if (!jugadorEncontrado) {
+                    throw new Error(`El jugador "${nombreExcel}" (Fila ${i + 1}) no existe. Revisa tildes/espacios en tu archivo.`);
                 }
 
-                const jornada = parseInt(columnas[1].trim());
-
-                // ==== LECTURA DE EUROS ====
-                const eurosPos = parseFloat(columnas[2].trim()) || 0;
-                const eurosRoj = parseFloat(columnas[3].trim()) || 0;
-                const total = eurosPos + eurosRoj;
-
-                // Lo metemos en la mochila temporal
-                deudasTemporales.push({
-                    nombre: nombre,
-                    jornada: jornada,
-                    eurosPosicion: eurosPos,
-                    eurosRojas: eurosRoj,
-                    total: total
+                // Preparamos el paquete de la misma forma que exige nuestra tabla de Supabase
+                paqueteDeudasCSV.push({
+                    id_jugador: jugadorEncontrado.id,
+                    jornada: parseInt(columnas[1].trim()),
+                    importe_posicion: parseFloat(columnas[2].trim()) || 0,
+                    importe_rojas: parseFloat(columnas[3].trim()) || 0,
+                    pagado: false // Las importamos como NO pagadas
                 });
             }
 
-            // Si el bucle terminó sin errores, guardamos de verdad
-            if (!huboError) {
+            // 4. Si ha llegado hasta aquí sin errores, ¡hacemos un envío masivo a Supabase!
+            if (paqueteDeudasCSV.length > 0) {
+                const { error: errorInsert } = await db.from('detalle_pagos').insert(paqueteDeudasCSV);
+                if (errorInsert) throw new Error("Fallo al insertar en Supabase: " + errorInsert.message);
 
-                // Volcamos todas las deudas del Excel a la mochila real del tesorero
-                mochilaDeudas.push(...deudasTemporales);
-
-                // ¡AQUÍ ESTÁ LA MAGIA! Llamamos a tus propias funciones para que se repinte todo
-                actualizarPantallaSaldar();
-                actualizarMensajeWhatsApp();
-                actualizarMensajeGeneral();
-
-                alert(`¡Éxito! ✅ Se han añadido ${deudasTemporales.length} deudas nuevas desde el CSV.`);
+                alert(`¡Éxito! ✅ Se han importado ${paqueteDeudasCSV.length} deudas desde el CSV.`);
             }
 
-            // Vaciamos el input siempre
+        } catch (error) {
+            console.error(error);
+            alert("❌ ERROR: " + error.message);
+        } finally {
+            // Limpiamos el input y restauramos el botón pase lo que pase
             inputCsv.value = "";
-        };
-
-        lector.readAsText(archivo);
+            labelCsv.innerHTML = textoOriginalLabel;
+        }
     });
 }
+
+
+// ==========================================
+// CARGAR DESPLEGABLE DE JUGADORES (Añadir Deudas)
+// ==========================================
+async function cargarDesplegableJugadores() {
+    const selectJugador = document.getElementById('tesorero-jugador');
+    if (!selectJugador) return;
+
+    // Pedimos los nombres a Supabase ordenados de la A a la Z
+    const { data: jugadores, error } = await db.from('jugadores').select('nombre').order('nombre', { ascending: true });
+
+    if (error) {
+        console.error("Error cargando el desplegable:", error.message);
+        return;
+    }
+
+    // Vaciamos el desplegable por si quedaban restos del HTML y ponemos la opción por defecto
+    selectJugador.innerHTML = '<option value="">-- Elige --</option>';
+
+    // Recorremos la lista real y creamos una etiqueta <option> por cada uno
+    jugadores.forEach(jugador => {
+        const opcion = document.createElement('option');
+        opcion.value = jugador.nombre;
+        opcion.textContent = jugador.nombre;
+        selectJugador.appendChild(opcion);
+    });
+}
+
+// Ejecutamos la función nada más abrir la web
+cargarDesplegableJugadores();

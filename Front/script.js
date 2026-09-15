@@ -824,7 +824,7 @@ async function actualizarMensajeWhatsApp() {
 
         if (error) throw new Error("Error obteniendo las deudas.");
 
-        let mensaje = `🚨 *DEUDAS ACTUALIZADAS* 🚨\nPara ver consultar la clasificación y otros detalles entrar en:\n👉 www.tu-web-de-la-liga.com\n\n`;
+        let mensaje = `🚨 *DEUDAS ACTUALIZADAS* 🚨\nPara ver consultar la clasificación y otros detalles entrar en:\n👉 https://ligabiwenger2627.netlify.app/\n\n`;
 
         // Si la BBDD nos dice que no hay nada pendiente...
         if (!deudasPendientes || deudasPendientes.length === 0) {

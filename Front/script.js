@@ -309,7 +309,7 @@ async function actualizarFarolillo() {
         idFarolilloActual = jugadorFarolillo.id;
 
         textoFarolillo.innerHTML = `
-            Como pedazo de farolo tenemos a: <strong>${jugadorFarolillo.nombre.toUpperCase()}</strong> habiendo pagado un total de <strong>${maxDeuda.toFixed(2)}€</strong>.
+            Como pedazo de farolo tenemos a: <strong style="color: #db2028;">${jugadorFarolillo.nombre.toUpperCase()}</strong> habiendo pagado un total de <strong style="color: #db2028;">${maxDeuda.toFixed(2)}€</strong>.
             <br><br>
             ¡No pierdas la oportunidad de reírte de él y envíale un mensaje ahora mismo!
         `;
@@ -429,11 +429,12 @@ btnContinuar.addEventListener('click', async () => {
     // Cuando pulsen "OK", ocultamos el popup
     popupBienvenida.classList.add('oculto');
 
-    // ¡NUEVO! Calculamos y escribimos las deudas antes de abrir el telón
+    // ¡NUEVO! Calculamos y escribimos TODO antes de abrir el telón
     await Promise.all([
         actualizarTarjetaDeudas(),
         actualizarFarolillo(),
-        actualizarClasificacionGeneral()
+        actualizarClasificacionGeneral(),
+        actualizarPerdedorJornada() // <--- ¡AQUÍ ESTÁ LA NUEVA FUNCIÓN!
     ]);
 
     // Y mostramos por fin la página principal con las tarjetas
@@ -1186,3 +1187,105 @@ async function cargarDesplegableJugadores() {
 
 // Ejecutamos la función nada más abrir la web
 cargarDesplegableJugadores();
+
+
+
+// ==========================================
+// NAVEGACIÓN: PESTAÑAS JUGADOR (INICIO / CLASIFICACIÓN)
+// ==========================================
+const btnTabInicio = document.getElementById('btn-tab-inicio');
+const btnTabClasificacion = document.getElementById('btn-tab-clasificacion');
+const contenidoInicio = document.getElementById('contenido-tab-inicio');
+const contenidoClasificacion = document.getElementById('contenido-tab-clasificacion');
+
+if (btnTabInicio && btnTabClasificacion) {
+    btnTabInicio.addEventListener('click', () => {
+        // Mostramos Inicio, ocultamos Clasificación
+        contenidoInicio.classList.remove('oculto');
+        contenidoClasificacion.classList.add('oculto');
+        // Cambiamos colores de los botones
+        btnTabInicio.classList.add('activo');
+        btnTabClasificacion.classList.remove('activo');
+    });
+
+    btnTabClasificacion.addEventListener('click', () => {
+        // Mostramos Clasificación, ocultamos Inicio
+        contenidoClasificacion.classList.remove('oculto');
+        contenidoInicio.classList.add('oculto');
+        // Cambiamos colores de los botones
+        btnTabClasificacion.classList.add('activo');
+        btnTabInicio.classList.remove('activo');
+    });
+}
+
+// ==========================================
+// LÓGICA: PERDEDOR DE LA ÚLTIMA JORNADA
+// ==========================================
+async function actualizarPerdedorJornada() {
+    const textoPerdedor = document.getElementById('texto-perdedor-jornada');
+    if (!textoPerdedor) return;
+
+    try {
+        // 1. Obtener los datos de pagos para extraer más adelante cuál es el último número de jornada y calcular los importes
+        const { data: deudas, error: errorDeudas } = await db
+            .from('detalle_pagos')
+            .select('id_jugador, jornada, importe_posicion, importe_rojas');
+
+        if (errorDeudas || !deudas || deudas.length === 0) {
+            textoPerdedor.innerHTML = "Todavía no hay jornadas registradas.";
+            return;
+        }
+
+        // 2. Averiguar cuál es el número de la última jornada
+        let ultimaJornada = 0;
+        deudas.forEach(d => {
+            if (d.jornada > ultimaJornada) ultimaJornada = d.jornada;
+        });
+
+        // 3. Filtrar deudas SOLO de esa última jornada y sumar
+        const deudasUltimaJornada = deudas.filter(d => d.jornada === ultimaJornada);
+
+        let maxDeuda = -1;
+        let idPerdedor = null;
+        const totalesJornada = {};
+
+        deudasUltimaJornada.forEach(d => {
+            if (!totalesJornada[d.id_jugador]) totalesJornada[d.id_jugador] = 0;
+            totalesJornada[d.id_jugador] += (d.importe_posicion + d.importe_rojas);
+        });
+
+        for (const [id, total] of Object.entries(totalesJornada)) {
+            if (total > maxDeuda) {
+                maxDeuda = total;
+                idPerdedor = parseInt(id);
+            }
+        }
+
+        if (!idPerdedor) return;
+
+        // 4. Conseguir el nombre del perdedor
+        const { data: jugadorData } = await db.from('jugadores').select('nombre').eq('id', idPerdedor).single();
+        const nombrePerdedor = jugadorData ? jugadorData.nombre : "Desconocido";
+
+        // 5. Conseguir un mensaje humillante aleatorio (los ultra-ofensivos del farolillo)
+        const { data: mensajes } = await db.from('mensajes_ultimo').select('mensaje').eq('id_jugador', idPerdedor);
+
+        let fraseElegida = "Ha hecho el ridículo más espantoso."; // Por defecto si falla
+        if (mensajes && mensajes.length > 0) {
+            const indice = Math.floor(Math.random() * mensajes.length);
+            fraseElegida = mensajes[indice].mensaje;
+        }
+
+        // 6. Inyectar en el HTML con el formato exacto que pediste
+        textoPerdedor.innerHTML = `
+            El pringado de la última jornada (Jornada ${ultimaJornada}) es <strong style="color: #ff9800;">${nombrePerdedor.toUpperCase()}</strong>.
+            <div style="margin-top: 15px; padding: 12px 15px; background: rgba(255, 152, 0, 0.1); border-left: 4px solid #ff9800; border-radius: 0 6px 6px 0; color: #ffffff; font-size: 15px; font-style: italic; font-weight: 500; line-height: 1.5; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                "${fraseElegida}"
+            </div>
+        `;
+
+    } catch (error) {
+        console.error("Error cargando al perdedor:", error);
+        textoPerdedor.innerHTML = "Error cargando los datos.";
+    }
+}

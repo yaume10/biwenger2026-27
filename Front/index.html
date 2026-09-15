@@ -48,70 +48,98 @@
             <button id="btn-cambiar-jugador">Cambiar de usuario</button>
         </header>
 
-        <!-- BLOQUE DEUDAS -->
-        <div class="tarjeta-deuda">
-            <h3>Tus Deudas</h3>
-            <p id="texto-tus-deudas">¡Estás al día! No debes nada.</p>
+        <!-- NUEVO: Menú de Pestañas Jugador (reutilizamos las clases del tesorero para que coja el estilo) -->
+        <div class="tabs-tesorero">
+            <button class="tab-btn activo" id="btn-tab-inicio">INICIO</button>
+            <button class="tab-btn" id="btn-tab-clasificacion">CLASIFICACIÓN</button>
         </div>
 
-        <!-- BLOQUE FAROLILLO -->
-        <div class="tarjeta-farolillo">
-            <h3>El Farolillo Rojo</h3>
-            <div class="contenido-farolillo">
-                <p id="texto-el-ultimo"></p>
-                <img src="foto_prueba.jpeg" alt="Foto del Farolillo" class="foto-farolillo">
 
+        <!-- ===================================== -->
+        <!-- PESTAÑA 1: INICIO (Visible por defecto) -->
+        <!-- ===================================== -->
+        <div id="contenido-tab-inicio" class="tab-contenido">
+
+            <!-- BLOQUE DEUDAS -->
+            <div class="tarjeta-deuda">
+                <h3>Tus Deudas</h3>
+                <p id="texto-tus-deudas">¡Estás al día! No debes nada.</p>
             </div>
-            <button id="btn-generar-ultimo">Generar mensaje humillante</button>
-        </div>
 
-        <!-- POPUP: Mensaje del Farolillo Rojo -->
-        <section id="popup-ultimo" class="oculto">
-            <div class="caja-popup">
-                <p id="texto-popup-ultimo"></p>
-                <button id="btn-copiar">Copiar mensaje para Whatsapp</button>
-                <button id="btn-cerrar-popup-ultimo">Cerrar</button>
-            </div>
-        </section>
-
-        <!-- BLOQUE CLASIFICACION -->
-        <div class="tarjeta-clasificacion">
-            <h3>Clasificación General</h3>
-
-            <div class="resumen-global">
-                <div class="metrica">
-                    <span class="etiqueta">Bote Actual</span>
-                    <span class="valor" id="total-pagado-global"></span>
-                </div>
-                <div class="metrica">
-                    <span class="etiqueta">Proyección Bote</span>
-                    <span class="valor" id="proyeccion-global"></span>
-                </div>
-                <div class="metrica">
-                    <span class="etiqueta">Proyección Comida</span>
-                    <span class="valor" id="comida-persona"></span>
+            <!-- NUEVO BLOQUE: PERDEDOR DE LA ÚLTIMA JORNADA -->
+            <div class="tarjeta-farolillo" style="background: #2b2b2b; border-left-color: #ff9800;">
+                <h3 style="color: #ff9800;">El Pringado de la Jornada</h3>
+                <div class="contenido-farolillo">
+                    <p id="texto-perdedor-jornada">Buscando al peor de la última jornada...</p>
                 </div>
             </div>
 
-            <div class="tabla-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Pos</th>
-                            <th>Jugador</th>
-                            <th>Total Pagado</th>
-                            <th>x Posición</th>
-                            <th>x Rojas</th>
-                            <th>Proyección</th>
-                        </tr>
-                    </thead>
-                    <tbody id="cuerpo-tabla-clasificacion">
-
-                    </tbody>
-                </table>
+            <!-- BLOQUE FAROLILLO ROJO (El histórico) -->
+            <div class="tarjeta-farolillo">
+                <h3>El Farolillo Rojo </h3>
+                <div class="contenido-farolillo">
+                    <p id="texto-el-ultimo"></p>
+                    <img src="foto_prueba.jpeg" alt="Foto del Farolillo" class="foto-farolillo">
+                </div>
+                <button id="btn-generar-ultimo">Generar mensaje humillante</button>
             </div>
+
+            <!-- POPUP: Mensaje del Farolillo Rojo -->
+            <section id="popup-ultimo" class="oculto">
+                <div class="caja-popup">
+                    <p id="texto-popup-ultimo"></p>
+                    <button id="btn-copiar">Copiar mensaje para Whatsapp</button>
+                    <button id="btn-cerrar-popup-ultimo">Cerrar</button>
+                </div>
+            </section>
+
         </div>
 
+
+        <!-- ===================================== -->
+        <!-- PESTAÑA 2: CLASIFICACIÓN (Oculta al inicio) -->
+        <!-- ===================================== -->
+        <div id="contenido-tab-clasificacion" class="tab-contenido oculto">
+
+            <!-- BLOQUE CLASIFICACION GENERAL -->
+            <div class="tarjeta-clasificacion">
+                <h3>Clasificación General</h3>
+
+                <div class="resumen-global">
+                    <div class="metrica">
+                        <span class="etiqueta">Bote Actual</span>
+                        <span class="valor" id="total-pagado-global"></span>
+                    </div>
+                    <div class="metrica">
+                        <span class="etiqueta">Proyección Bote</span>
+                        <span class="valor" id="proyeccion-global"></span>
+                    </div>
+                    <div class="metrica">
+                        <span class="etiqueta">Proyección Comida</span>
+                        <span class="valor" id="comida-persona"></span>
+                    </div>
+                </div>
+
+                <div class="tabla-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Pos</th>
+                                <th>Jugador</th>
+                                <th>Total Pagado</th>
+                                <th>x Posición</th>
+                                <th>x Rojas</th>
+                                <th>Proyección</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpo-tabla-clasificacion">
+                            <!-- Se rellena con JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
 
     </section>
     <!-- FIN Pagina principal -->

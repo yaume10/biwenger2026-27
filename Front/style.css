@@ -244,7 +244,7 @@ section {
     font-size: 16px;
     font-weight: 800;
     margin-bottom: 12px;
-    color: #ffffff;
+    color: #db2028;
     /* Título en blanco puro */
     text-transform: uppercase;
 }
@@ -275,9 +275,9 @@ section {
 
 /* --- Estilo de la Foto --- */
 .foto-farolillo {
-    width: 180px;
+    width: 150px;
     /* Ancho fijo */
-    height: 180px;
+    height: 150px;
     /* Alto fijo */
     object-fit: cover;
     /* Evita que la foto se achate o deforme */
